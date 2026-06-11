@@ -3,7 +3,14 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/server/db";
 import { users, webhookEvents } from "@/server/db/schema";
 import { addPendingEntitlement, type EntitlementData, upsertSubscription } from "@/server/entitlements";
-import { getAuthorizedPayment, getPreapproval, type MpPreapproval, verifyWebhookSignature } from "@/server/mercadopago";
+import {
+  getAuthorizedPayment,
+  getPayment,
+  getPreapproval,
+  type MpPayment,
+  type MpPreapproval,
+  verifyWebhookSignature,
+} from "@/server/mercadopago";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -30,6 +37,28 @@ function mapStatus(pre: MpPreapproval): EntitlementData | null {
       return { plan: "pro", status: "past_due", provider: "mercadopago", externalId, currentPeriodEnd: null };
     default:
       // "pending" and anything else: nothing to grant yet.
+      return null;
+  }
+}
+
+// One-time payment (Pix / card via Checkout Pro) → a ~1-month Pro pass.
+function mapPaymentStatus(p: MpPayment): EntitlementData | null {
+  const externalId = String(p.id);
+  switch (p.status) {
+    case "approved":
+      return {
+        plan: "pro",
+        status: "active",
+        provider: "mercadopago",
+        externalId,
+        currentPeriodEnd: new Date(Date.now() + 31 * DAY_MS),
+      };
+    case "refunded":
+      return { plan: "pro", status: "refunded", provider: "mercadopago", externalId, currentPeriodEnd: null };
+    case "charged_back":
+      return { plan: "pro", status: "chargeback", provider: "mercadopago", externalId, currentPeriodEnd: null };
+    default:
+      // pending | in_process | rejected | cancelled — nothing to grant yet.
       return null;
   }
 }
@@ -115,7 +144,22 @@ export async function POST(request: NextRequest) {
   const markProcessed = () =>
     db.insert(webhookEvents).values({ id: eventKey, provider: "mercadopago" }).onConflictDoNothing();
 
-  const pre = await resolvePreapproval(String(type), String(dataId));
+  const topic = String(type);
+
+  // One-time payment (Checkout Pro / Pix). Recurring preapprovals fall through.
+  if (topic === "payment") {
+    const payment = await getPayment(String(dataId));
+    const entitlement = mapPaymentStatus(payment);
+    if (!entitlement) {
+      await markProcessed();
+      return json(200, { ok: true, status: payment.status });
+    }
+    const applied = await applyEntitlement(payment.external_reference, payment.payer?.email, entitlement);
+    await markProcessed();
+    return json(200, { ok: true, applied, status: payment.status });
+  }
+
+  const pre = await resolvePreapproval(topic, String(dataId));
   if (!pre) {
     await markProcessed();
     return json(200, { ok: true, ignored: type });
