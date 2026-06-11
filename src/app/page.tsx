@@ -1,8 +1,9 @@
 "use client";
 
-import { Grab, Loader2, LogIn } from "lucide-react";
+import { Grab, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { signIn, useSession } from "next-auth/react";
+import { GoogleIcon } from "@/components/icons/google-icon";
 import { MediaDownloader } from "@/features/media-downloader/components/media-downloader";
 import { ErrorBoundary } from "./error-boundary";
 
@@ -67,9 +68,9 @@ export default function Home() {
             <button
               type="button"
               onClick={() => signIn("google", { callbackUrl: "/" })}
-              className="btn-primary mx-auto mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-xl px-6 text-sm font-semibold"
+              className="btn-primary mx-auto mt-5 inline-flex h-11 items-center justify-center gap-2.5 rounded-xl px-6 text-sm font-semibold"
             >
-              <LogIn className="h-4 w-4" />
+              <GoogleIcon className="h-5 w-5" />
               Continuar com Google
             </button>
           </div>

@@ -2,6 +2,7 @@
 
 import { Grab } from "lucide-react";
 import { signIn } from "next-auth/react";
+import { GoogleIcon } from "@/components/icons/google-icon";
 
 export default function SignInPage() {
   return (
@@ -18,8 +19,9 @@ export default function SignInPage() {
       <button
         type="button"
         onClick={() => signIn("google", { callbackUrl: "/" })}
-        className="btn-primary mt-7 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold"
+        className="btn-primary mt-7 inline-flex h-11 w-full items-center justify-center gap-2.5 rounded-xl text-sm font-semibold"
       >
+        <GoogleIcon className="h-5 w-5" />
         Continuar com Google
       </button>
 
