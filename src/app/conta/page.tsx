@@ -244,7 +244,7 @@ export default function ContaPage() {
                   <span className="font-semibold text-[var(--g-ink)]">
                     {usage?.used} de {usage?.limit} downloads hoje
                   </span>
-                  <span className="text-[var(--g-muted)]">renova em ~{hoursUntilQuotaReset()}h</span>
+                  <span className="text-[var(--g-muted)]">renova em {hoursUntilQuotaReset()}H</span>
                 </div>
                 <div
                   className="h-2 w-full overflow-hidden rounded-full bg-[var(--g-surface-3)]"
