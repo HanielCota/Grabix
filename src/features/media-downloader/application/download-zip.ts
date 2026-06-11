@@ -1,5 +1,5 @@
 import { PassThrough, Readable, Transform } from "node:stream";
-import archiver from "archiver";
+import { ZipArchive } from "archiver";
 import { sanitizeFileName } from "@/lib/files/file-name";
 import { appConfig } from "@/server/config";
 import { safeFetch } from "@/server/safe-fetch";
@@ -73,7 +73,7 @@ export async function createZipStream(assets: MediaAsset[], signal?: AbortSignal
     throw Errors.tooManyAssets();
   }
 
-  const archive = archiver("zip", { zlib: { level: 1 } });
+  const archive = new ZipArchive({ zlib: { level: 1 } });
   const passThrough = new PassThrough();
   const maxZipBytes = appConfig.limits.maxZipSizeBytes;
   let totalBytes = 0;
