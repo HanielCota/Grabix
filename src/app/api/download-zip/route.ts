@@ -6,7 +6,7 @@ import { downloadZipInputSchema } from "@/features/media-downloader/domain/types
 import { buildContentDisposition } from "@/lib/files/file-name";
 import { handleApiError } from "@/server/api-utils";
 import { requireUser } from "@/server/auth-guard";
-import { consumeDownloadQuota, getUserPlan } from "@/server/entitlements";
+import { consumeDownloadQuota, getUserPlan, refundDownloadQuota } from "@/server/entitlements";
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,16 +24,23 @@ export async function POST(request: NextRequest) {
       throw Errors.tooManyAssets();
     }
 
-    const zipStream = await createZipStream(assets, request.signal, {
-      maxZipBytes: plan.limits.maxZipSizeBytes,
-      concurrency: plan.limits.maxConcurrentDownloads,
-    });
-
-    // Count after the stream is set up so synchronous validation failures don't
-    // burn the user's daily quota.
-    const quota = await consumeDownloadQuota(user.id, plan);
+    // A ZIP counts as one download per file. Reserve the quota up front (so we
+    // don't build a ZIP we'd reject), and refund if it can't be produced.
+    const quota = await consumeDownloadQuota(user.id, plan, assets.length);
     if (!quota.ok) {
+      await refundDownloadQuota(user.id, plan, assets.length);
       throw Errors.quotaExceeded();
+    }
+
+    let zipStream: Readable;
+    try {
+      zipStream = await createZipStream(assets, request.signal, {
+        maxZipBytes: plan.limits.maxZipSizeBytes,
+        concurrency: plan.limits.maxConcurrentDownloads,
+      });
+    } catch (err) {
+      await refundDownloadQuota(user.id, plan, assets.length);
+      throw err;
     }
 
     const webStream = Readable.toWeb(zipStream) as ReadableStream;

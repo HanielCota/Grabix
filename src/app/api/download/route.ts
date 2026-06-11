@@ -5,18 +5,17 @@ import { downloadAssetInputSchema } from "@/features/media-downloader/domain/typ
 import { buildContentDisposition } from "@/lib/files/file-name";
 import { handleApiError } from "@/server/api-utils";
 import { requireUser } from "@/server/auth-guard";
-import { consumeDownloadQuota, getUserPlan } from "@/server/entitlements";
+import { consumeDownloadQuota, getUserPlan, refundDownloadQuota } from "@/server/entitlements";
 
-export async function GET(request: NextRequest) {
+// POST (not GET): downloading consumes the daily quota, so it must not be a
+// safe/idempotent verb that browsers or proxies could retry or prefetch.
+export async function POST(request: NextRequest) {
   try {
     const user = await requireUser();
     const plan = await getUserPlan(user.id);
 
-    const params = request.nextUrl.searchParams;
-    const parsedInput = downloadAssetInputSchema.safeParse({
-      url: params.get("url") ?? "",
-      fileName: params.get("fileName") ?? "download",
-    });
+    const body = await request.json();
+    const parsedInput = downloadAssetInputSchema.safeParse(body);
     if (!parsedInput.success) {
       return await handleApiError(parsedInput.error);
     }
@@ -29,6 +28,7 @@ export async function GET(request: NextRequest) {
     // oversized files don't burn the user's daily quota.
     const quota = await consumeDownloadQuota(user.id, plan);
     if (!quota.ok) {
+      await refundDownloadQuota(user.id, plan);
       throw Errors.quotaExceeded();
     }
 

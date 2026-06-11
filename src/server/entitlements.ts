@@ -52,7 +52,9 @@ export async function upsertSubscription(userId: string, data: EntitlementData):
         status: data.status,
         provider: data.provider ?? null,
         externalId: data.externalId ?? null,
-        currentPeriodEnd: data.currentPeriodEnd ?? null,
+        // Keep the existing paid-through date when an event carries none
+        // (e.g. a cancellation) so the user isn't downgraded mid-period.
+        currentPeriodEnd: data.currentPeriodEnd ?? sql`${subscriptions.currentPeriodEnd}`,
         updatedAt: new Date(),
       },
     });
@@ -60,34 +62,46 @@ export async function upsertSubscription(userId: string, data: EntitlementData):
 
 // ─── Daily download quota ───
 
-function utcDay(date = new Date()): string {
-  return date.toISOString().slice(0, 10);
+// The quota window is a calendar day in Brazil (resets at 00:00 BRT, not UTC).
+function currentDay(date = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(date);
 }
 
 /**
- * Atomically increment today's download count and report whether the caller is
- * still within their plan's daily quota. Race-safe via an upsert.
+ * Atomically add `amount` to today's download count and report whether the
+ * caller is still within their plan's daily quota. Race-safe via an upsert.
  */
 export async function consumeDownloadQuota(
   userId: string,
   plan: Plan,
+  amount = 1,
 ): Promise<{ ok: boolean; used: number; limit: number }> {
   const limit = plan.quota.downloadsPerDay;
   if (!Number.isFinite(limit)) return { ok: true, used: 0, limit };
 
   const db = getDb();
-  const day = utcDay();
+  const day = currentDay();
   const [row] = await db
     .insert(usageDaily)
-    .values({ userId, day, downloads: 1 })
+    .values({ userId, day, downloads: amount })
     .onConflictDoUpdate({
       target: [usageDaily.userId, usageDaily.day],
-      set: { downloads: sql`${usageDaily.downloads} + 1` },
+      set: { downloads: sql`${usageDaily.downloads} + ${amount}` },
     })
     .returning();
 
-  const used = row?.downloads ?? 1;
+  const used = row?.downloads ?? amount;
   return { ok: used <= limit, used, limit };
+}
+
+/** Give back quota when the action it was charged for didn't happen. */
+export async function refundDownloadQuota(userId: string, plan: Plan, amount = 1): Promise<void> {
+  if (!Number.isFinite(plan.quota.downloadsPerDay)) return;
+  const db = getDb();
+  await db
+    .update(usageDaily)
+    .set({ downloads: sql`GREATEST(0, ${usageDaily.downloads} - ${amount})` })
+    .where(and(eq(usageDaily.userId, userId), eq(usageDaily.day, currentDay())));
 }
 
 /** Read today's usage without incrementing (for UI hints). */
@@ -96,7 +110,7 @@ export async function getTodayUsage(userId: string): Promise<number> {
   const rows = await db
     .select()
     .from(usageDaily)
-    .where(and(eq(usageDaily.userId, userId), eq(usageDaily.day, utcDay())))
+    .where(and(eq(usageDaily.userId, userId), eq(usageDaily.day, currentDay())))
     .limit(1);
   return rows[0]?.downloads ?? 0;
 }
