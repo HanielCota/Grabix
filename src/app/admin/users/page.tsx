@@ -80,7 +80,7 @@ export default function AdminUsersPage() {
                   <p className="truncate text-sm font-semibold text-[var(--g-ink)]">{u.name ?? "—"}</p>
                   {u.plan === "pro" && (
                     <span className="inline-flex items-center gap-1 rounded-md border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)] px-1.5 py-0.5 text-[10px] font-bold uppercase text-[var(--g-ink)]">
-                      <Crown size={10} /> Pro
+                      <Crown size={10} className="text-[var(--g-gold)]" /> Pro
                     </span>
                   )}
                   {u.isAdmin && (

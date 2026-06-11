@@ -29,7 +29,7 @@ export function ProUpsell() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)] text-[var(--g-ink)]">
-            <Crown className="h-5 w-5" />
+            <Crown className="h-5 w-5 text-[var(--g-gold)]" />
           </span>
           <div>
             <h2 id="pro-upsell-title" className="text-lg font-bold tracking-[-0.02em] text-[var(--g-ink)]">

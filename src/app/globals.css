@@ -21,6 +21,8 @@
   --g-accent-soft: rgba(255, 255, 255, 0.04);
 
   --g-accent-border: rgba(255, 255, 255, 0.12);
+  /* Pro / premium accent (the crown icon) */
+  --g-gold: #f5c451;
   --g-danger: #f87171;
   --g-danger-bg: rgba(248, 113, 113, 0.06);
   --g-danger-border: rgba(248, 113, 113, 0.15);

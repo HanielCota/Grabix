@@ -25,7 +25,7 @@ export function UpgradeCallout({ title = "Recurso do plano Pro", message, onUpgr
     >
       <div className="flex items-start gap-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)] text-[var(--g-ink)]">
-          <Crown className="h-5 w-5" />
+          <Crown className="h-5 w-5 text-[var(--g-gold)]" />
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-[var(--g-ink)]">{title}</p>

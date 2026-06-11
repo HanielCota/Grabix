@@ -79,7 +79,7 @@ export function UpgradeDialog({ open, onClose }: { open: boolean; onClose: () =>
 
             {/* Header */}
             <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)]">
-              <Crown className="h-6 w-6 text-[var(--g-ink)]" />
+              <Crown className="h-6 w-6 text-[var(--g-gold)]" />
             </div>
             <h2 className="text-xl font-bold tracking-[-0.02em] text-[var(--g-ink)]">Grabix Pro</h2>
 
