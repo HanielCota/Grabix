@@ -88,6 +88,7 @@ export function UpgradeDialog({ open, onClose }: { open: boolean; onClose: () =>
               <span className="text-3xl font-extrabold text-[var(--g-ink)]">{amount}</span>
               {period && <span className="text-sm font-medium text-[var(--g-sub)]">/{period}</span>}
             </div>
+            <p className="mt-1 text-xs text-[var(--g-muted)]">Pague uma vez · 30 dias de acesso · Pix ou cartão</p>
 
             {/* Benefits */}
             <ul className="mt-5 space-y-2.5">
@@ -118,14 +119,13 @@ export function UpgradeDialog({ open, onClose }: { open: boolean; onClose: () =>
               ) : (
                 <>
                   <Crown className="h-4 w-4" />
-                  Assinar por {amount}
-                  {period && `/${period}`}
+                  Pagar {amount}
                 </>
               )}
             </button>
 
             <p className="mt-3 text-center text-xs text-[var(--g-muted)]">
-              Pagamento via Mercado Pago. Cancele quando quiser.
+              Pague com Pix ou cartão via Mercado Pago · acesso por 30 dias.
             </p>
           </motion.div>
         </motion.div>
