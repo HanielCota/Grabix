@@ -3,6 +3,7 @@
 import { Check, Copy, Download, ExternalLink, Image as ImageIcon, Loader2, Video } from "lucide-react";
 import { motion } from "motion/react";
 import { memo, useState } from "react";
+import { useUpgrade } from "@/components/upgrade/upgrade-context";
 import { notifyUsageChanged } from "@/hooks/use-me";
 import type { MediaAsset } from "../domain/types";
 
@@ -24,14 +25,23 @@ export const MediaCard = memo(function MediaCard({ asset, index, selected, onTog
   const [downloaded, setDownloaded] = useState(false);
   const [downloadMessage, setDownloadMessage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const { open: openUpgrade } = useUpgrade();
   const isImage = asset.type === "IMAGE";
   const isSvg = asset.extension === "svg";
 
   async function handleCopy(e: React.MouseEvent) {
     e.stopPropagation();
-    await navigator.clipboard.writeText(asset.url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    // clipboard API is unavailable on insecure (HTTP) origins and can reject on
+    // permission denial — only flip to "copied" when the write actually succeeds.
+    try {
+      if (!navigator.clipboard) throw new Error("clipboard-unavailable");
+      await navigator.clipboard.writeText(asset.url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      setDownloadMessage("Não foi possível copiar. Copie a URL manualmente.");
+      setTimeout(() => setDownloadMessage(null), 2500);
+    }
   }
 
   async function handleDownload(e: React.MouseEvent) {
@@ -46,6 +56,12 @@ export const MediaCard = memo(function MediaCard({ asset, index, selected, onTog
         body: JSON.stringify({ url: asset.url, fileName: asset.fileName }),
       });
       if (!response.ok) {
+        // Quota/Pro-gated: surface the upgrade path instead of a dead-end error,
+        // matching the ZIP download flow.
+        if (response.status === 402) {
+          openUpgrade();
+          return;
+        }
         const data = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;
         setDownloadMessage(data?.error?.message ?? "Falha ao baixar o arquivo.");
         return;
@@ -189,7 +205,11 @@ export const MediaCard = memo(function MediaCard({ asset, index, selected, onTog
             <ExternalLink className="h-4 w-4" />
           </a>
         </div>
-        {downloadMessage && <p className="mt-2 text-xs text-[var(--g-danger)]">{downloadMessage}</p>}
+        {downloadMessage && (
+          <p role="alert" className="mt-2 text-xs text-[var(--g-danger)]">
+            {downloadMessage}
+          </p>
+        )}
       </div>
     </motion.article>
   );

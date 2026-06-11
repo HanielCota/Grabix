@@ -14,7 +14,8 @@
     "format": "biome format --write src/",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.2",
@@ -23,22 +24,24 @@
     "archiver": "^8.0.0",
     "cheerio": "^1.2.0",
     "drizzle-orm": "^0.45.2",
-    "lucide-react": "^1.16.0",
+    "lucide-react": "^1.17.0",
     "motion": "^12.40.0",
-    "next": "^16.2.6",
+    "next": "^16.2.9",
     "next-auth": "^5.0.0-beta.31",
     "postcss": "^8.5.8",
     "postgres": "^3.4.9",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "tailwindcss": "^4.2.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
     "@biomejs/biome": "2.4.16",
+    "@playwright/test": "^1.60.0",
     "@types/archiver": "^8.0.0",
     "@types/node": "^25.9.3",
-    "@types/react": "^19.2.15",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "drizzle-kit": "^0.31.10",
     "typescript": "^6.0.3"
