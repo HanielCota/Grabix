@@ -19,6 +19,7 @@ interface MediaCardProps {
 
 export const MediaCard = memo(function MediaCard({ asset, index, selected, onToggle }: MediaCardProps) {
   const [imgError, setImgError] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
   const [downloadMessage, setDownloadMessage] = useState<string | null>(null);
@@ -103,13 +104,19 @@ export const MediaCard = memo(function MediaCard({ asset, index, selected, onTog
       {/* Preview */}
       <div className="relative flex h-48 items-center justify-center overflow-hidden bg-[var(--g-surface-2)]">
         {isImage && !isSvg && !imgError ? (
-          <img
-            src={asset.url}
-            alt={asset.fileName}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-            loading="lazy"
-            onError={() => setImgError(true)}
-          />
+          <>
+            {!imgLoaded && <div className="absolute inset-0 animate-pulse bg-[var(--g-surface-3)]" />}
+            <img
+              src={asset.url}
+              alt={asset.fileName}
+              className={`h-full w-full object-cover transition-all duration-300 group-hover:scale-105 ${
+                imgLoaded ? "opacity-100" : "opacity-0"
+              }`}
+              loading="lazy"
+              onLoad={() => setImgLoaded(true)}
+              onError={() => setImgError(true)}
+            />
+          </>
         ) : (
           <div className="flex flex-col items-center gap-2 text-[var(--g-muted)]">
             {isImage ? (
