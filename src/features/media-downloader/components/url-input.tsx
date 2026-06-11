@@ -1,10 +1,13 @@
 "use client";
 
-import { AlertCircle, ArrowRight, Globe, Loader2, Search, Shield, X, Zap } from "lucide-react";
+import { AlertCircle, ArrowRight, Globe, Loader2, Search, Sparkles, X, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { DeepCrawlToggle } from "@/components/deep-crawl-toggle";
 import type { CrawlConfig } from "@/lib/crawl/types";
 import { getPublicUrlError, normalizeHttpUrlInput } from "@/lib/url/public-url";
+
+const EXAMPLE_URL = "https://pt.wikipedia.org/wiki/Gato";
+const STEPS = ["Cole a URL", "Veja as mídias", "Baixe"];
 
 type PartialCrawlConfig = Pick<CrawlConfig, "maxDepth" | "maxPages" | "followExternal">;
 
@@ -132,7 +135,7 @@ export function UrlInput({ onSubmit, isLoading, resetKey }: UrlInputProps) {
         <div className="flex flex-wrap items-center justify-center gap-2">
           <Pill icon={<Globe size={16} />} text="Qualquer site" />
           <Pill icon={<Zap size={16} />} text="Em segundos" />
-          <Pill icon={<Shield size={16} />} text="Sem cadastro" />
+          <Pill icon={<Sparkles size={16} />} text="Plano grátis" />
         </div>
 
         <DeepCrawlToggle
@@ -141,6 +144,31 @@ export function UrlInput({ onSubmit, isLoading, resetKey }: UrlInputProps) {
           config={crawlConfig}
           onConfigChange={setCrawlConfig}
         />
+
+        {/* How it works + example */}
+        <div className="mt-1 flex flex-col items-center gap-2.5">
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-[var(--g-muted)]">
+            {STEPS.map((step, i) => (
+              <span key={step} className="inline-flex items-center gap-1.5">
+                {i > 0 && <ArrowRight size={11} className="opacity-40" />}
+                <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[var(--g-surface-3)] text-[10px] font-bold text-[var(--g-sub)]">
+                  {i + 1}
+                </span>
+                {step}
+              </span>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setUrl(EXAMPLE_URL);
+              setTouched(true);
+            }}
+            className="rounded-full border border-[var(--g-line)] bg-[var(--g-surface-2)] px-3 py-1 text-xs font-medium text-[var(--g-sub)] transition-colors hover:border-[var(--g-line-hover)] hover:text-[var(--g-ink)]"
+          >
+            Testar com um exemplo
+          </button>
+        </div>
       </div>
     </form>
   );

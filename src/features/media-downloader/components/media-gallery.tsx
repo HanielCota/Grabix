@@ -3,6 +3,7 @@
 import { CheckSquare, Crown, Download, Image as ImageIcon, Package, Square, Video, X } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useUpgrade } from "@/components/upgrade/upgrade-context";
+import { notifyUsageChanged } from "@/hooks/use-me";
 import { PRICING } from "@/server/plans";
 import type { AnalyzePageResult, MediaAsset } from "../domain/types";
 import { MediaCard } from "./media-card";
@@ -130,6 +131,11 @@ export function MediaGallery({ result }: MediaGalleryProps) {
       if (controller.signal.aborted) return;
 
       if (!res.ok) {
+        if (res.status === 402) {
+          setZipMsg(null);
+          openUpgrade();
+          return;
+        }
         const data = await res.json();
         setZipMsg({ type: "err", text: data.error?.message ?? "Erro ao gerar ZIP." });
         return;
@@ -147,6 +153,7 @@ export function MediaGallery({ result }: MediaGalleryProps) {
       a.remove();
       setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
       setZipMsg({ type: "ok", text: `${zipCount} arquivo${zipCount !== 1 ? "s" : ""} no ZIP.` });
+      notifyUsageChanged();
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
       setZipMsg({ type: "err", text: "Erro de conexão ao gerar ZIP." });

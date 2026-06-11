@@ -73,6 +73,11 @@ export default function Home() {
               <GoogleIcon className="h-5 w-5" />
               Continuar com Google
             </button>
+
+            <p className="mx-auto mt-5 max-w-xs border-t border-[var(--g-line)] pt-4 text-xs text-[var(--g-muted)]">
+              No plano grátis: <span className="font-semibold text-[var(--g-sub)]">10 itens por análise</span> e{" "}
+              <span className="font-semibold text-[var(--g-sub)]">20 downloads por dia</span>.
+            </p>
           </div>
         )}
       </motion.section>

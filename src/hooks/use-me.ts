@@ -27,5 +27,25 @@ export function useMe() {
 
   useEffect(() => load(), [load]);
 
+  // Refresh the plan/quota when a download changes usage, or on tab focus.
+  useEffect(() => {
+    function onChange() {
+      load();
+    }
+    window.addEventListener("grabix:usage-changed", onChange);
+    window.addEventListener("focus", onChange);
+    return () => {
+      window.removeEventListener("grabix:usage-changed", onChange);
+      window.removeEventListener("focus", onChange);
+    };
+  }, [load]);
+
   return { me, loading, refresh: load };
+}
+
+/** Notify the UI that download usage changed (header quota pill refetches). */
+export function notifyUsageChanged() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("grabix:usage-changed"));
+  }
 }
