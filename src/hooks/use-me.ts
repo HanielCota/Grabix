@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 export interface MeData {
   authenticated: boolean;
   plan?: "free" | "pro";
+  isAdmin?: boolean;
   usage?: { used: number; limit: number | null; remaining: number | null };
 }
 

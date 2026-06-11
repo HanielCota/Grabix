@@ -1,11 +1,11 @@
 "use client";
 
-import { Crown, Grab, LogOut } from "lucide-react";
+import { Crown, Grab, LayoutDashboard, LogOut } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useUpgrade } from "@/components/upgrade/upgrade-context";
 import { useMe } from "@/hooks/use-me";
-import { PRICING } from "@/server/plans";
+import { usePricing } from "@/hooks/use-pricing";
 
 function PlanBadge({ plan }: { plan: "free" | "pro" }) {
   if (plan === "pro") {
@@ -46,6 +46,7 @@ export function SiteHeader() {
   const { me } = useMe();
   const plan = me?.plan ?? "free";
   const { open: openUpgrade } = useUpgrade();
+  const { proPriceLabel } = usePricing();
   const pathname = usePathname();
 
   return (
@@ -59,6 +60,15 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           {status === "authenticated" && (
             <>
+              {me?.isAdmin && (
+                <a
+                  href="/admin"
+                  title="Painel admin"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--g-line-hover)] bg-[var(--g-surface-3)] text-[var(--g-sub)] transition-all hover:bg-[var(--g-line)] hover:text-[var(--g-ink)]"
+                >
+                  <LayoutDashboard className="h-4 w-4" />
+                </a>
+              )}
               {plan === "free" && me?.usage?.limit != null && <UsagePill used={me.usage.used} limit={me.usage.limit} />}
               <PlanBadge plan={plan} />
               {plan === "free" && (
@@ -70,7 +80,7 @@ export function SiteHeader() {
                   <Crown className="h-3.5 w-3.5" />
                   Assinar Pro
                   <span className="hidden font-semibold text-[var(--g-accent-text)]/65 sm:inline">
-                    · {PRICING.proPriceLabel}
+                    · {proPriceLabel}
                   </span>
                 </button>
               )}

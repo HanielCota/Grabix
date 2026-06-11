@@ -43,6 +43,8 @@ export const Errors = {
 
   unauthorized: () => new AppError("Faça login para continuar.", "UNAUTHORIZED", 401),
 
+  forbidden: () => new AppError("Acesso restrito a administradores.", "FORBIDDEN", 403),
+
   upgradeRequired: (detail?: string) =>
     new AppError(detail ?? "Recurso disponível apenas no plano Pro.", "UPGRADE_REQUIRED", 402),
 

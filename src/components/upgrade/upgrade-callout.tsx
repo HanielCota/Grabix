@@ -2,7 +2,7 @@
 
 import { Crown, X } from "lucide-react";
 import { motion } from "motion/react";
-import { PRICING } from "@/server/plans";
+import { usePricing } from "@/hooks/use-pricing";
 
 interface UpgradeCalloutProps {
   title?: string;
@@ -13,6 +13,7 @@ interface UpgradeCalloutProps {
 
 // Friendly "you hit a Pro limit" state — accent-colored, not an error.
 export function UpgradeCallout({ title = "Recurso do plano Pro", message, onUpgrade, onDismiss }: UpgradeCalloutProps) {
+  const { proPriceLabel } = usePricing();
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.97 }}
@@ -35,7 +36,7 @@ export function UpgradeCallout({ title = "Recurso do plano Pro", message, onUpgr
             className="btn-primary mt-3 inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold"
           >
             <Crown size={15} />
-            Assinar Pro · {PRICING.proPriceLabel}
+            Assinar Pro · {proPriceLabel}
           </button>
         </div>
         {onDismiss && (
