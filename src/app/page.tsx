@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { signIn, useSession } from "next-auth/react";
 import { useState } from "react";
 import { GoogleIcon } from "@/components/icons/google-icon";
+import { ProUpsell } from "@/components/upgrade/pro-upsell";
 import { MediaDownloader } from "@/features/media-downloader/components/media-downloader";
 import { ErrorBoundary } from "./error-boundary";
 
@@ -92,6 +93,9 @@ export default function Home() {
           </div>
         )}
       </motion.section>
+
+      {/* ── Pro value, visible up front for non-subscribers (hidden once results show) ── */}
+      {!active && <ProUpsell />}
 
       {/* ── Footer ── */}
       <footer className="mt-16 border-t border-[var(--g-line)] pt-5 text-center text-sm leading-relaxed text-[var(--g-muted)]">

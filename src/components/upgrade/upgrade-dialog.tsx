@@ -5,16 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { usePricing } from "@/hooks/use-pricing";
 import { startCheckout } from "@/lib/billing/checkout";
-
-const BENEFITS = [
-  "200 arquivos por análise (free: 10)",
-  "Arquivos de até 100 MB",
-  "ZIP de até 500 MB",
-  "Busca profunda (varre várias páginas)",
-  "Renderização de páginas com JavaScript",
-  "Extração de vídeos protegidos (Vturb)",
-  "Downloads diários ilimitados",
-];
+import { benefitText, PRO_BENEFITS } from "@/lib/plans/benefits";
 
 function splitPrice(label: string): { amount: string; period: string } {
   const idx = label.indexOf("/");
@@ -100,12 +91,12 @@ export function UpgradeDialog({ open, onClose }: { open: boolean; onClose: () =>
 
             {/* Benefits */}
             <ul className="mt-5 space-y-2.5">
-              {BENEFITS.map((b) => (
-                <li key={b} className="flex items-start gap-2.5 text-sm text-[var(--g-sub)]">
+              {PRO_BENEFITS.map((b) => (
+                <li key={b.label} className="flex items-start gap-2.5 text-sm text-[var(--g-sub)]">
                   <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[var(--g-accent-soft)] text-[var(--g-ink)]">
                     <Check className="h-3 w-3" strokeWidth={3} />
                   </span>
-                  {b}
+                  {benefitText(b)}
                 </li>
               ))}
             </ul>
