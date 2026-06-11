@@ -8,6 +8,7 @@ import { requireUser } from "@/server/auth-guard";
 import { getUserPlan } from "@/server/entitlements";
 import { checkRateLimit } from "@/server/rate-limit";
 import { validateDnsResolution, validateUrlFormat } from "@/server/security";
+import { recordUrlFailure } from "@/server/url-failures";
 
 export async function POST(request: NextRequest) {
   let body: unknown;
@@ -57,9 +58,16 @@ export async function POST(request: NextRequest) {
         }
 
         try {
-          await runDeepCrawl(url, config, send, abortController.signal);
+          const result = await runDeepCrawl(url, config, send, abortController.signal);
+          // Crawl finished but found nothing — log it so the site can be improved.
+          if (result.totalMedia === 0 && !abortController.signal.aborted) {
+            await recordUrlFailure({ url, reason: "NO_MEDIA", deepCrawl: true, userId: user.id });
+          }
         } catch (err) {
           const message = err instanceof Error ? err.message : "Erro desconhecido";
+          if (!abortController.signal.aborted) {
+            await recordUrlFailure({ url, reason: "CRAWL_ERROR", message, deepCrawl: true, userId: user.id });
+          }
           send("crawl_error", { error: message });
         } finally {
           try {

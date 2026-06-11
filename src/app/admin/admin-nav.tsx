@@ -1,6 +1,6 @@
 "use client";
 
-import { CreditCard, LayoutDashboard, SlidersHorizontal, Users } from "lucide-react";
+import { AlertTriangle, CreditCard, LayoutDashboard, SlidersHorizontal, Users } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 const LINKS = [
@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/admin/users", label: "Usuários", icon: Users },
   { href: "/admin/plans", label: "Planos & preço", icon: SlidersHorizontal },
   { href: "/admin/subscriptions", label: "Assinaturas", icon: CreditCard },
+  { href: "/admin/failed-urls", label: "URLs com falha", icon: AlertTriangle },
 ];
 
 export function AdminNav() {

@@ -114,6 +114,33 @@ export const webhookEvents = pgTable("webhook_event", {
   receivedAt: timestamp("receivedAt", { mode: "date" }).notNull().defaultNow(),
 });
 
+// Pages that failed to extract (error or zero media found). Surfaced in the admin
+// "URLs com falha" tab so extraction gaps can be triaged and fixed. Aggregated by
+// (url, reason): a repeat failure bumps `count`/`lastSeenAt` instead of inserting,
+// and re-opens the row (resolved = false) so a regression resurfaces.
+export const urlFailures = pgTable(
+  "url_failure",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    url: text("url").notNull(),
+    host: text("host").notNull(),
+    reason: text("reason").notNull(),
+    message: text("message"),
+    deepCrawl: boolean("deepCrawl").notNull().default(false),
+    count: integer("count").notNull().default(1),
+    resolved: boolean("resolved").notNull().default(false),
+    lastUserId: text("lastUserId").references(() => users.id, { onDelete: "set null" }),
+    firstSeenAt: timestamp("firstSeenAt", { mode: "date" }).notNull().defaultNow(),
+    lastSeenAt: timestamp("lastSeenAt", { mode: "date" }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("url_failure_url_reason_unique").on(t.url, t.reason),
+    index("url_failure_lastSeenAt_idx").on(t.lastSeenAt),
+  ],
+);
+
 // Admin-editable plan config. Rows override the code defaults (src/server/plans.ts).
 // id = 'free' | 'pro'. downloadsPerDay = -1 means unlimited. priceAmountCents in
 // BRL cents (e.g. 1990 = R$ 19,90), only meaningful for paid plans.
