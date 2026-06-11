@@ -4,6 +4,7 @@ import { Crown, Grab, LayoutDashboard } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
 import { AccountMenu } from "@/components/account-menu";
+import { GoogleIcon } from "@/components/icons/google-icon";
 import { useUpgrade } from "@/components/upgrade/upgrade-context";
 import { useMe } from "@/hooks/use-me";
 import { usePricing } from "@/hooks/use-pricing";
@@ -93,8 +94,9 @@ export function SiteHeader() {
             <button
               type="button"
               onClick={() => signIn("google")}
-              className="btn-primary inline-flex h-9 items-center rounded-lg px-4 text-xs font-bold"
+              className="btn-primary inline-flex h-9 items-center gap-1.5 rounded-lg px-4 text-xs font-bold"
             >
+              <GoogleIcon className="h-4 w-4" />
               Entrar
             </button>
           )}
