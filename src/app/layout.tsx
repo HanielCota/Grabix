@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/components/auth/session-provider";
 import { SiteHeader } from "@/components/site-header";
+import { ProExpiryBanner } from "@/components/upgrade/pro-expiry-banner";
 import { UpgradeProvider } from "@/components/upgrade/upgrade-context";
 import "./globals.css";
 
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <AuthProvider>
           <UpgradeProvider>
             <SiteHeader />
+            <ProExpiryBanner />
             {children}
           </UpgradeProvider>
         </AuthProvider>
