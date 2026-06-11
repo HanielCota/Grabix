@@ -40,7 +40,7 @@ const navTransition = { duration: 0.25 };
 const sectionTransition = { duration: 0.3 };
 const resultTransition = { duration: 0.4 };
 
-export function MediaDownloader() {
+export function MediaDownloader({ onActiveChange }: { onActiveChange?: (active: boolean) => void }) {
   const [state, setState] = useState<ViewState>({ status: "idle" });
   const [resetKey, setResetKey] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
@@ -54,6 +54,11 @@ export function MediaDownloader() {
       abortRef.current?.abort();
     };
   }, []);
+
+  // Tell the page whether we're showing results so the hero can collapse.
+  useEffect(() => {
+    onActiveChange?.(state.status !== "idle");
+  }, [state.status, onActiveChange]);
 
   // Sync deep crawl status to view state
   useEffect(() => {

@@ -3,6 +3,8 @@
 import { AlertCircle, ArrowRight, Globe, Loader2, Search, Sparkles, X, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { DeepCrawlToggle } from "@/components/deep-crawl-toggle";
+import { useUpgrade } from "@/components/upgrade/upgrade-context";
+import { useMe } from "@/hooks/use-me";
 import type { CrawlConfig } from "@/lib/crawl/types";
 import { getPublicUrlError, normalizeHttpUrlInput } from "@/lib/url/public-url";
 
@@ -18,6 +20,9 @@ interface UrlInputProps {
 }
 
 export function UrlInput({ onSubmit, isLoading, resetKey }: UrlInputProps) {
+  const { me } = useMe();
+  const { open: openUpgrade } = useUpgrade();
+  const deepLocked = me?.plan !== "pro";
   const [url, setUrl] = useState("");
   const [touched, setTouched] = useState(false);
   const [deepCrawl, setDeepCrawl] = useState(false);
@@ -143,6 +148,8 @@ export function UrlInput({ onSubmit, isLoading, resetKey }: UrlInputProps) {
           onEnabledChange={setDeepCrawl}
           config={crawlConfig}
           onConfigChange={setCrawlConfig}
+          locked={deepLocked}
+          onLockedClick={openUpgrade}
         />
 
         {/* How it works + example */}

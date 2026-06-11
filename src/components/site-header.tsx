@@ -1,6 +1,7 @@
 "use client";
 
 import { Crown, Grab, LogOut } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useUpgrade } from "@/components/upgrade/upgrade-context";
 import { useMe } from "@/hooks/use-me";
@@ -45,6 +46,7 @@ export function SiteHeader() {
   const { me } = useMe();
   const plan = me?.plan ?? "free";
   const { open: openUpgrade } = useUpgrade();
+  const pathname = usePathname();
 
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--g-line)] bg-[var(--g-bg)]/80 backdrop-blur">
@@ -67,7 +69,9 @@ export function SiteHeader() {
                 >
                   <Crown className="h-3.5 w-3.5" />
                   Assinar Pro
-                  <span className="hidden text-[var(--g-ink)]/70 sm:inline">· {PRICING.proPriceLabel}</span>
+                  <span className="hidden font-semibold text-[var(--g-accent-text)]/65 sm:inline">
+                    · {PRICING.proPriceLabel}
+                  </span>
                 </button>
               )}
               <button
@@ -81,7 +85,7 @@ export function SiteHeader() {
             </>
           )}
 
-          {status === "unauthenticated" && (
+          {status === "unauthenticated" && pathname !== "/sign-in" && (
             <button
               type="button"
               onClick={() => signIn("google")}

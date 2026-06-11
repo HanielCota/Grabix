@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Layers, SlidersHorizontal } from "lucide-react";
+import { ChevronDown, Crown, Layers, SlidersHorizontal } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import type { CrawlConfig } from "@/lib/crawl/types";
@@ -12,9 +12,19 @@ interface DeepCrawlToggleProps {
   onEnabledChange: (enabled: boolean) => void;
   config: PartialConfig;
   onConfigChange: (config: PartialConfig) => void;
+  /** When true, the toggle is a Pro feature: it shows a badge and clicking calls onLockedClick. */
+  locked?: boolean;
+  onLockedClick?: () => void;
 }
 
-export function DeepCrawlToggle({ enabled, onEnabledChange, config, onConfigChange }: DeepCrawlToggleProps) {
+export function DeepCrawlToggle({
+  enabled,
+  onEnabledChange,
+  config,
+  onConfigChange,
+  locked = false,
+  onLockedClick,
+}: DeepCrawlToggleProps) {
   const [showOptions, setShowOptions] = useState(false);
   const optionsId = "deep-crawl-options";
 
@@ -24,40 +34,55 @@ export function DeepCrawlToggle({ enabled, onEnabledChange, config, onConfigChan
       <button
         type="button"
         onClick={() => {
+          if (locked) {
+            onLockedClick?.();
+            return;
+          }
           const next = !enabled;
           onEnabledChange(next);
           if (!next) setShowOptions(false);
         }}
-        aria-pressed={enabled}
+        aria-pressed={locked ? undefined : enabled}
+        title={locked ? "Recurso do plano Pro" : undefined}
         className={`mx-auto flex items-center gap-2.5 rounded-xl border px-4 py-2.5 transition-all ${
-          enabled
+          enabled && !locked
             ? "border-[var(--g-accent-border)] bg-[var(--g-accent-soft)]"
             : "border-[var(--g-line)] bg-[var(--g-surface-2)] hover:border-[var(--g-line-hover)] hover:bg-[var(--g-surface-3)]"
         }`}
       >
-        <span
-          className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 ${
-            enabled ? "bg-[var(--g-accent)]" : "bg-[var(--g-line-hover)]"
-          }`}
-        >
+        {locked ? (
+          <Layers size={15} className="text-[var(--g-muted)]" />
+        ) : (
           <span
-            className={`inline-block h-3.5 w-3.5 rounded-full shadow-sm transition-all duration-200 ${
-              enabled ? "translate-x-4.5 bg-[var(--g-accent-text)]" : "translate-x-0.5 bg-white/80"
+            className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 ${
+              enabled ? "bg-[var(--g-accent)]" : "bg-[var(--g-line-hover)]"
             }`}
-          />
-        </span>
-        <Layers size={15} className={enabled ? "text-[var(--g-ink)]" : "text-[var(--g-muted)]"} />
-        <span className={`text-sm font-semibold ${enabled ? "text-[var(--g-ink)]" : "text-[var(--g-sub)]"}`}>
+          >
+            <span
+              className={`inline-block h-3.5 w-3.5 rounded-full shadow-sm transition-all duration-200 ${
+                enabled ? "translate-x-4.5 bg-[var(--g-accent-text)]" : "translate-x-0.5 bg-white/80"
+              }`}
+            />
+          </span>
+        )}
+        {!locked && <Layers size={15} className={enabled ? "text-[var(--g-ink)]" : "text-[var(--g-muted)]"} />}
+        <span className={`text-sm font-semibold ${enabled && !locked ? "text-[var(--g-ink)]" : "text-[var(--g-sub)]"}`}>
           Busca profunda
         </span>
-        <span className={`hidden text-xs sm:inline ${enabled ? "text-[var(--g-sub)]" : "text-[var(--g-muted)]"}`}>
-          Segue links para encontrar mais mídias
-        </span>
+        {locked ? (
+          <span className="inline-flex items-center gap-1 rounded-md border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--g-ink)]">
+            <Crown size={10} /> Pro
+          </span>
+        ) : (
+          <span className={`hidden text-xs sm:inline ${enabled ? "text-[var(--g-sub)]" : "text-[var(--g-muted)]"}`}>
+            Segue links para encontrar mais mídias
+          </span>
+        )}
       </button>
 
       {/* Advanced options */}
       <AnimatePresence>
-        {enabled && (
+        {enabled && !locked && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
