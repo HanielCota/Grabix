@@ -35,9 +35,14 @@ export async function proxy(request: NextRequest) {
     );
   }
 
-  // Rate limiting
+  // Rate limiting. Prefer the platform-set x-real-ip (the trusted edge writes it
+  // and the client can't forge it); fall back to the left-most x-forwarded-for
+  // only when x-real-ip is absent. Using the left-most XFF alone is spoofable
+  // behind a proxy that appends the real client IP.
   const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
+    request.headers.get("x-real-ip")?.trim() ||
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    "unknown";
 
   const { limited, remaining, resetAt } = await checkRateLimit(ip);
 
