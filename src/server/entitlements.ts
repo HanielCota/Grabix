@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { getDb } from "@/server/db";
 import { pendingEntitlements, subscriptions, usageDaily } from "@/server/db/schema";
 import { FREE_PLAN, getPlan, type Plan } from "@/server/plans";
@@ -96,9 +96,8 @@ export async function getTodayUsage(userId: string): Promise<number> {
   const rows = await db
     .select()
     .from(usageDaily)
-    .where(eq(usageDaily.userId, userId))
-    .limit(1)
-    .then((r) => r.filter((x) => x.day === utcDay()));
+    .where(and(eq(usageDaily.userId, userId), eq(usageDaily.day, utcDay())))
+    .limit(1);
   return rows[0]?.downloads ?? 0;
 }
 

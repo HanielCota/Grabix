@@ -103,27 +103,31 @@ export async function POST(request: NextRequest) {
   }
 
   // ─── Idempotency ───
+  // Mark the event as processed only AFTER it succeeds. If we recorded it first
+  // and the MP API call then failed, MP's retry would be deduped and the event
+  // lost forever. Reprocessing a duplicate is safe (upsert is idempotent).
   const eventKey = requestId ?? `${type}:${dataId}`;
   const db = getDb();
-  const inserted = await db
-    .insert(webhookEvents)
-    .values({ id: eventKey, provider: "mercadopago" })
-    .onConflictDoNothing()
-    .returning();
-  if (inserted.length === 0) {
+  const seen = await db.select().from(webhookEvents).where(eq(webhookEvents.id, eventKey)).limit(1);
+  if (seen.length > 0) {
     return json(200, { ok: true, duplicate: true });
   }
+  const markProcessed = () =>
+    db.insert(webhookEvents).values({ id: eventKey, provider: "mercadopago" }).onConflictDoNothing();
 
   const pre = await resolvePreapproval(String(type), String(dataId));
   if (!pre) {
+    await markProcessed();
     return json(200, { ok: true, ignored: type });
   }
 
   const entitlement = mapStatus(pre);
   if (!entitlement) {
+    await markProcessed();
     return json(200, { ok: true, status: pre.status });
   }
 
   const applied = await applyEntitlement(pre.external_reference, pre.payer_email, entitlement);
+  await markProcessed();
   return json(200, { ok: true, applied, status: pre.status });
 }

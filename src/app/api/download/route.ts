@@ -21,14 +21,16 @@ export async function GET(request: NextRequest) {
       return await handleApiError(parsedInput.error);
     }
 
+    const input = parsedInput.data;
+    const result = await downloadAsset(input.url, request.signal, plan.limits.maxFileSizeBytes);
+    const finalName = result.fileName ?? input.fileName;
+
+    // Count the download only after the asset is confirmed fetchable, so 404s /
+    // oversized files don't burn the user's daily quota.
     const quota = await consumeDownloadQuota(user.id, plan);
     if (!quota.ok) {
       throw Errors.quotaExceeded();
     }
-
-    const input = parsedInput.data;
-    const result = await downloadAsset(input.url, request.signal, plan.limits.maxFileSizeBytes);
-    const finalName = result.fileName ?? input.fileName;
 
     return new Response(result.stream, {
       headers: {

@@ -24,15 +24,17 @@ export async function POST(request: NextRequest) {
       throw Errors.tooManyAssets();
     }
 
-    const quota = await consumeDownloadQuota(user.id, plan);
-    if (!quota.ok) {
-      throw Errors.quotaExceeded();
-    }
-
     const zipStream = await createZipStream(assets, request.signal, {
       maxZipBytes: plan.limits.maxZipSizeBytes,
       concurrency: plan.limits.maxConcurrentDownloads,
     });
+
+    // Count after the stream is set up so synchronous validation failures don't
+    // burn the user's daily quota.
+    const quota = await consumeDownloadQuota(user.id, plan);
+    if (!quota.ok) {
+      throw Errors.quotaExceeded();
+    }
 
     const webStream = Readable.toWeb(zipStream) as ReadableStream;
 
