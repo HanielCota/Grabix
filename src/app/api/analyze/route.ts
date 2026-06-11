@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     const raw = await analyzePage(url, deepCrawl, request.signal, { allowJsRendering: plan.features.jsRendering });
 
-    // The page loaded fine but nothing was extractable — the most useful signal
+    // The page loaded fine but nothing was extractable - the most useful signal
     // for improving extraction. Logged against the raw count (before plan gating)
     // so a free user's hidden assets don't read as "no media".
     if (raw.assets.length === 0) {

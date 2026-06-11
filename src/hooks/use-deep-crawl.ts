@@ -254,7 +254,7 @@ function processSSEEvent(raw: string, dispatch: React.Dispatch<Action>) {
 
   switch (eventName) {
     case "crawl_started":
-      // Acknowledged — no action needed
+      // Acknowledged - no action needed
       break;
 
     case "page_discovered": {

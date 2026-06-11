@@ -46,7 +46,7 @@ export default function AdminPlansPage() {
       <PlanForm id="pro" title="Plano Pro" data={pro} pricing={pricing} />
       <p className="text-xs text-[var(--g-muted)]">
         Mudanças valem na hora para você; para os demais, em até ~1 min (cache). O valor afeta novas assinaturas no
-        Mercado Pago — assinaturas existentes mantêm o preço contratado.
+        Mercado Pago - assinaturas existentes mantêm o preço contratado.
       </p>
     </div>
   );

@@ -22,7 +22,7 @@ function hostOf(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, "");
   } catch {
-    return "—";
+    return "-";
   }
 }
 
@@ -64,7 +64,7 @@ export async function recordUrlFailure(input: RecordUrlFailureInput): Promise<vo
         },
       });
   } catch {
-    // Telemetry is best-effort — never break the user's request because of it.
+    // Telemetry is best-effort - never break the user's request because of it.
   }
 }
 

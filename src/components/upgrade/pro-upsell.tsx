@@ -36,7 +36,7 @@ export function ProUpsell() {
               O que vem no Grabix Pro
             </h2>
             <p className="text-sm text-[var(--g-sub)]">
-              Tudo do plano grátis, sem limites —{" "}
+              Tudo do plano grátis, sem limites -{" "}
               <span className="font-semibold text-[var(--g-ink)]">{proPriceLabel}</span>
             </p>
           </div>

@@ -87,6 +87,6 @@ jobs:
       - name: Run E2E tests
         run: npm run test:e2e
         env:
-          # Public pages only — no real DB/OAuth needed. A dummy secret lets the
+          # Public pages only - no real DB/OAuth needed. A dummy secret lets the
           # Auth.js session endpoint respond (returns null when signed out).
           AUTH_SECRET: ci-placeholder-secret-not-used-in-production

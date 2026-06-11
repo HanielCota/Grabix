@@ -99,7 +99,7 @@ export function UpgradeDialog({
             </div>
             <p className="mt-1 text-xs text-[var(--g-muted)]">Pague uma vez · 30 dias de acesso · Pix ou cartão</p>
 
-            {/* Contextual hook — why the dialog opened */}
+            {/* Contextual hook - why the dialog opened */}
             {reason && (
               <div className="mt-4 flex items-center gap-2 rounded-xl border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)] px-3 py-2 text-xs font-medium text-[var(--g-ink)]">
                 <Sparkles className="h-3.5 w-3.5 shrink-0 text-[var(--g-gold)]" />

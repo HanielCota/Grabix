@@ -5,7 +5,7 @@ import { appConfig } from "@/server/config";
  * JavaScript-generated content. Falls back gracefully when Playwright
  * is not installed or JS rendering is disabled.
  *
- * Playwright is a purely optional dependency — the project builds and
+ * Playwright is a purely optional dependency - the project builds and
  * runs without it. When GRABIX_JS_RENDERING=true and Playwright is
  * installed, pages are rendered with headless Chromium.
  */

@@ -77,7 +77,7 @@ export default function AdminUsersPage() {
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="truncate text-sm font-semibold text-[var(--g-ink)]">{u.name ?? "—"}</p>
+                  <p className="truncate text-sm font-semibold text-[var(--g-ink)]">{u.name ?? "-"}</p>
                   {u.plan === "pro" && (
                     <span className="inline-flex items-center gap-1 rounded-md border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)] px-1.5 py-0.5 text-[10px] font-bold uppercase text-[var(--g-ink)]">
                       <Crown size={10} className="text-[var(--g-gold)]" /> Pro
@@ -91,7 +91,7 @@ export default function AdminUsersPage() {
                 </div>
                 <p className="truncate text-xs text-[var(--g-muted)]">{u.email}</p>
                 <p className="mt-0.5 text-xs text-[var(--g-muted)]">
-                  {u.usageToday} download(s) hoje · status {u.subStatus ?? "—"}
+                  {u.usageToday} download(s) hoje · status {u.subStatus ?? "-"}
                 </p>
               </div>
 

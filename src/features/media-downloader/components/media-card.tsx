@@ -32,7 +32,7 @@ export const MediaCard = memo(function MediaCard({ asset, index, selected, onTog
   async function handleCopy(e: React.MouseEvent) {
     e.stopPropagation();
     // clipboard API is unavailable on insecure (HTTP) origins and can reject on
-    // permission denial — only flip to "copied" when the write actually succeeds.
+    // permission denial - only flip to "copied" when the write actually succeeds.
     try {
       if (!navigator.clipboard) throw new Error("clipboard-unavailable");
       await navigator.clipboard.writeText(asset.url);

@@ -13,7 +13,7 @@ export function UpgradeProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [reason, setReason] = useState<string | null>(null);
   const open = useCallback((reason?: string) => {
-    // Some callers wire this straight to onClick, which would pass a MouseEvent —
+    // Some callers wire this straight to onClick, which would pass a MouseEvent -
     // only treat an explicit string as a contextual reason.
     setReason(typeof reason === "string" ? reason : null);
     setIsOpen(true);

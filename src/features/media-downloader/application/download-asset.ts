@@ -22,7 +22,7 @@ export async function downloadAsset(
     throw Errors.invalidUrl("URL não pode ser vazia.");
   }
 
-  // Extension check is optional — some assets have extensionless URLs
+  // Extension check is optional - some assets have extensionless URLs
   // (e.g. CDN streams, og:video). Content-Type is validated after fetch.
   const ext = getExtensionFromUrl(rawUrl);
   if (ext && !isMediaExtension(ext)) {

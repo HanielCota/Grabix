@@ -18,7 +18,7 @@ function formatDate(iso?: string | null): string | null {
 }
 
 const DAY_MS = 86_400_000;
-// One-time Pro pass length (mirrors PRO_PASS_DURATION_MS on the server) — used as
+// One-time Pro pass length (mirrors PRO_PASS_DURATION_MS on the server) - used as
 // the bar's full span only when we can't derive the real one from the period.
 const PASS_MS = 31 * DAY_MS;
 
@@ -28,7 +28,7 @@ function proCountdown(periodEnd?: string | null, periodStart?: string | null): {
   if (Number.isNaN(end)) return null;
   const remaining = end - Date.now();
   if (remaining <= 0) return null;
-  // Prefer the real pass span (end − start) so recurring cycles of any length
+  // Prefer the real pass span (end - start) so recurring cycles of any length
   // fill the bar accurately; fall back to the standard one-month pass otherwise.
   const start = periodStart ? new Date(periodStart).getTime() : Number.NaN;
   const span = !Number.isNaN(start) && end > start ? end - start : PASS_MS;
@@ -146,7 +146,7 @@ export default function ContaPage() {
           )}
         </span>
         <div className="min-w-0">
-          <p className="truncate text-base font-semibold text-[var(--g-ink)]">{user.name ?? "—"}</p>
+          <p className="truncate text-base font-semibold text-[var(--g-ink)]">{user.name ?? "-"}</p>
           <p className="truncate text-sm text-[var(--g-muted)]">{user.email}</p>
           <p className="mt-0.5 text-xs text-[var(--g-muted)]">Perfil gerenciado pela sua conta Google.</p>
         </div>
@@ -155,7 +155,7 @@ export default function ContaPage() {
       {/* ── Plan & usage ── */}
       <section className="mt-4 rounded-2xl border border-[var(--g-line)] bg-[var(--g-surface-1)] p-5">
         {planLoading ? (
-          // Skeleton enquanto plano/uso carrega — evita piscar "Free" para quem é Pro.
+          // Skeleton enquanto plano/uso carrega - evita piscar "Free" para quem é Pro.
           <div className="animate-pulse">
             <div className="flex items-center justify-between gap-4">
               <div className="space-y-2">

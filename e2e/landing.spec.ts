@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
-// Public, signed-out pages only — no DB/OAuth required, so these are fast and
+// Public, signed-out pages only - no DB/OAuth required, so these are fast and
 // deterministic. Functional + accessibility checks (no flaky screenshot diffs).
 
 test.describe("landing (signed out)", () => {

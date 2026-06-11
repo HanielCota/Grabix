@@ -78,7 +78,7 @@ export function CrawlResults({ results }: CrawlResultsProps) {
   const [confidenceFilter, setConfidenceFilter] = useState<ConfidenceFilter>("all");
   const zipAbortRef = useRef<AbortController | null>(null);
   const deferredSearchQuery = useDeferredValue(searchQuery);
-  // All pages with media start expanded — use index-based keys to handle duplicate URLs
+  // All pages with media start expanded - use index-based keys to handle duplicate URLs
   const [expandedPages, setExpandedPages] = useState<Set<number>>(() => {
     const expanded = new Set<number>();
     for (let i = 0; i < results.results.length; i++) {

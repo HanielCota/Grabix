@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { AppError } from "@/features/media-downloader/domain/errors";
 
-// Mercado Pago — Subscriptions (preapproval) via REST.
+// Mercado Pago - Subscriptions (preapproval) via REST.
 // Docs: https://www.mercadopago.com.br/developers/en/reference/subscriptions/_preapproval/post
 
 const MP_API = "https://api.mercadopago.com";
@@ -155,7 +155,7 @@ const WEBHOOK_TOLERANCE_MS = (() => {
 function isFreshTimestamp(ts: string): boolean {
   const raw = Number(ts);
   if (!Number.isFinite(raw) || raw <= 0) return false;
-  // MP may send seconds or milliseconds — normalize to ms.
+  // MP may send seconds or milliseconds - normalize to ms.
   const ms = raw < 1e12 ? raw * 1000 : raw;
   return Math.abs(Date.now() - ms) <= WEBHOOK_TOLERANCE_MS;
 }

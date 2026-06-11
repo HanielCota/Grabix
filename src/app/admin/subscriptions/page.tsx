@@ -18,7 +18,7 @@ interface Evt {
   receivedAt: string;
 }
 
-const fmt = (d: string | null) => (d ? new Date(d).toLocaleString("pt-BR") : "—");
+const fmt = (d: string | null) => (d ? new Date(d).toLocaleString("pt-BR") : "-");
 
 export default function AdminSubscriptionsPage() {
   const [subs, setSubs] = useState<Sub[]>([]);
@@ -53,7 +53,7 @@ export default function AdminSubscriptionsPage() {
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-[var(--g-ink)]">{s.email ?? s.id}</p>
                   <p className="text-xs text-[var(--g-muted)]">
-                    {s.plan} · {s.provider ?? "—"} · período até {fmt(s.currentPeriodEnd)}
+                    {s.plan} · {s.provider ?? "-"} · período até {fmt(s.currentPeriodEnd)}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">

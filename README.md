@@ -322,7 +322,7 @@ git push origin feat/your-feature
 
 ## Roadmap
 
-- [x] JavaScript rendering (Playwright) for SPAs — optional, via `GRABIX_JS_RENDERING=true`
+- [x] JavaScript rendering (Playwright) for SPAs - optional, via `GRABIX_JS_RENDERING=true`
 - [x] More selectors (`<picture>`, CSS `background-image`)
 - [x] Environment variable configuration (`.env.example`)
 - [ ] Async queue for heavy analyses

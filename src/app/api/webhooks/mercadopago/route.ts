@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    // MP sometimes pings with an empty/non-JSON body — fall back to query params.
+    // MP sometimes pings with an empty/non-JSON body - fall back to query params.
   }
 
   const type = body.type ?? body.topic ?? url.searchParams.get("type") ?? url.searchParams.get("topic") ?? "";

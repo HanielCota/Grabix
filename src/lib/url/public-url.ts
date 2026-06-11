@@ -40,7 +40,7 @@ export function normalizeHttpUrlInput(raw: string): string {
 export function isPrivateHostname(hostname: string): boolean {
   let normalized = hostname.trim().toLowerCase();
   if (!normalized) return true;
-  // URL.hostname wraps IPv6 addresses in brackets — strip them for matching
+  // URL.hostname wraps IPv6 addresses in brackets - strip them for matching
   if (normalized.startsWith("[") && normalized.endsWith("]")) {
     normalized = normalized.slice(1, -1);
   }

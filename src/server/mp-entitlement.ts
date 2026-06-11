@@ -51,7 +51,7 @@ export function mapPaymentStatus(p: MpPayment, now = Date.now()): EntitlementDat
     case "charged_back":
       return { plan: "pro", status: "chargeback", provider: "mercadopago", externalId, currentPeriodEnd: null };
     default:
-      // pending | in_process | rejected | cancelled — nothing to grant yet.
+      // pending | in_process | rejected | cancelled - nothing to grant yet.
       return null;
   }
 }

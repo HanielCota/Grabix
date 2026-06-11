@@ -1,4 +1,4 @@
-# Grabix — Setup de Planos (Free / Pro)
+# Grabix - Setup de Planos (Free / Pro)
 
 O Grabix agora exige **login** e tem dois planos: **Free** e **Pro** (assinatura
 mensal via Mercado Pago). Este guia cobre o que provisionar para rodar.
@@ -72,7 +72,7 @@ NEXT_PUBLIC_PRO_PRICE_LABEL="R$ 19,90/mês"
   criada já vinculada ao usuário logado. Há fallback por e-mail + *entitlement
   pendente* caso o `external_reference` não venha.
 - Em teste, pague com uma **conta de comprador de teste** (diferente da conta
-  vendedora) — o MP retorna `sandbox_init_point` com credenciais de teste.
+  vendedora) - o MP retorna `sandbox_init_point` com credenciais de teste.
 
 ## 4. Rodar
 
@@ -82,5 +82,5 @@ npm run db:migrate
 npm run dev
 ```
 
-Sem `DATABASE_URL`/`AUTH_*` o app sobe, mas login e operações falham — todas as
+Sem `DATABASE_URL`/`AUTH_*` o app sobe, mas login e operações falham - todas as
 4 rotas de API exigem usuário autenticado.

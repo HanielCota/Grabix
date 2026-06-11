@@ -389,7 +389,7 @@ async function rateLimitDomain(url: string, timestamps: Map<string, number>): Pr
 
     timestamps.set(domain, Date.now());
   } catch {
-    // Invalid URL — skip rate limiting
+    // Invalid URL - skip rate limiting
   }
 }
 

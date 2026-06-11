@@ -105,7 +105,7 @@ const GRABIX_HEADERS: Record<string, string> = {
 };
 
 // Browser-like identity used ONLY as a fallback when the default request looks
-// blocked (connection dropped or HTTP 403) — some WAFs reject the Grabix UA.
+// blocked (connection dropped or HTTP 403) - some WAFs reject the Grabix UA.
 const BROWSER_HEADERS: Record<string, string> = {
   "User-Agent":
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
@@ -134,17 +134,17 @@ async function tryFetch(
     });
     if (!response.ok) {
       const reason = HTTP_ERROR_MESSAGES[response.status] ?? `A pagina retornou status ${response.status}.`;
-      // 403 is the usual "bot blocked" signal — worth a browser-identity retry.
+      // 403 is the usual "bot blocked" signal - worth a browser-identity retry.
       return { ok: false, retryable: response.status === 403, error: Errors.fetchFailed(reason) };
     }
     return { ok: true, response, resolvedUrl };
   } catch (err) {
-    // SSRF/redirect (AppError) and timeouts are genuine — never retry them.
+    // SSRF/redirect (AppError) and timeouts are genuine - never retry them.
     if (err instanceof AppError) return { ok: false, retryable: false, error: err };
     if (err instanceof Error && (err.name === "AbortError" || err.name === "TimeoutError")) {
       return { ok: false, retryable: false, error: Errors.fetchFailed("Timeout ao buscar página.") };
     }
-    // Connection-level failure (reset/refused/…) — a browser identity may pass.
+    // Connection-level failure (reset/refused/…) - a browser identity may pass.
     return { ok: false, retryable: true, error: Errors.fetchFailed(networkErrorReason(err)) };
   }
 }

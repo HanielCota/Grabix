@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await requireUser();
 
-    // Deep crawl fans out to many pages — tighter per-user budget than analyze.
+    // Deep crawl fans out to many pages - tighter per-user budget than analyze.
     const rl = await checkRateLimit(`deep:${user.id}`, { max: 5, windowMs: 60_000 });
     if (rl.limited) {
       throw Errors.rateLimited();
@@ -53,13 +53,13 @@ export async function POST(request: NextRequest) {
           try {
             controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
           } catch {
-            // Stream closed — ignore
+            // Stream closed - ignore
           }
         }
 
         try {
           const result = await runDeepCrawl(url, config, send, abortController.signal);
-          // Crawl finished but found nothing — log it so the site can be improved.
+          // Crawl finished but found nothing - log it so the site can be improved.
           if (result.totalMedia === 0 && !abortController.signal.aborted) {
             await recordUrlFailure({ url, reason: "NO_MEDIA", deepCrawl: true, userId: user.id });
           }

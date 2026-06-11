@@ -1,4 +1,4 @@
-// Official Google "G" mark (4-color). Brand colors are fixed by design — do not
+// Official Google "G" mark (4-color). Brand colors are fixed by design - do not
 // recolor with currentColor. Renders correctly on light backgrounds.
 export function GoogleIcon({ className }: { className?: string }) {
   return (

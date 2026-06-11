@@ -9,7 +9,7 @@ const REDIRECT_STATUS_CODES = new Set([301, 302, 303, 307, 308]);
 // ─── SSRF-guarded dispatcher ───
 //
 // The pre-flight checks (validateUrlFormat + validateDnsResolution) reject bad
-// hosts before we connect, but fetch() re-resolves DNS on its own — leaving a
+// hosts before we connect, but fetch() re-resolves DNS on its own - leaving a
 // DNS-rebinding (TOCTOU) gap where a host validated as public could resolve to a
 // private address at connection time. This dispatcher performs the private-IP
 // check inside the connection's own DNS lookup, so the address that is validated

@@ -297,7 +297,7 @@ export async function extractMediaAndLinksFromDom(
     const content = $(`meta[property="${prop}"]`).attr("content") ?? $(`meta[name="${prop}"]`).attr("content");
     if (!content) continue;
 
-    // Skip embed page URLs (YouTube, Vimeo, etc.) — they are HTML pages, not video files
+    // Skip embed page URLs (YouTube, Vimeo, etc.) - they are HTML pages, not video files
     if (extractYouTubeId(content) || extractVimeoId(content)) continue;
 
     rawRefs.push({ url: content, sourceTag: `meta[${prop}]`, inferredExt: "mp4" });
@@ -318,7 +318,7 @@ export async function extractMediaAndLinksFromDom(
       const data = JSON.parse(text);
       extractVideoFromJsonLd(data, rawRefs);
     } catch {
-      // Malformed JSON-LD — skip
+      // Malformed JSON-LD - skip
     }
   });
 
@@ -369,7 +369,7 @@ export async function extractMediaAndLinksFromDom(
       });
     }
   } catch {
-    // Vturb extraction is best-effort — don't fail the whole extraction
+    // Vturb extraction is best-effort - don't fail the whole extraction
   }
 
   const assets = await normalizeAndDeduplicate(rawRefs, baseUrl);

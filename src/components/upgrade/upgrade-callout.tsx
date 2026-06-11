@@ -11,7 +11,7 @@ interface UpgradeCalloutProps {
   onDismiss?: () => void;
 }
 
-// Friendly "you hit a Pro limit" state — accent-colored, not an error.
+// Friendly "you hit a Pro limit" state - accent-colored, not an error.
 export function UpgradeCallout({ title = "Recurso do plano Pro", message, onUpgrade, onDismiss }: UpgradeCalloutProps) {
   const { proPriceLabel } = usePricing();
   return (

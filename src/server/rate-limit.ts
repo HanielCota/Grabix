@@ -2,7 +2,7 @@ import { Redis } from "@upstash/redis";
 
 // Fixed-window limiter. Uses Upstash Redis (shared across all instances) when
 // configured, otherwise falls back to an in-memory window that is per-instance
-// — fine for low traffic, but set UPSTASH_REDIS_REST_* in production for a
+// - fine for low traffic, but set UPSTASH_REDIS_REST_* in production for a
 // global limit. The limiter fails open: if Redis errors, traffic is allowed
 // (via the in-memory path) rather than blocked.
 
@@ -95,7 +95,7 @@ export async function checkRateLimit(key: string, opts?: RateLimitOptions): Prom
     try {
       return await redisCheck(key, now, max, windowMs);
     } catch {
-      // Redis unavailable — degrade to in-memory rather than blocking everyone.
+      // Redis unavailable - degrade to in-memory rather than blocking everyone.
       return memCheck(key, now, max, windowMs);
     }
   }
