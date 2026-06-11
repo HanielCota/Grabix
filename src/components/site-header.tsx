@@ -78,7 +78,7 @@ export function SiteHeader() {
                   onClick={openUpgrade}
                   className="btn-primary inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-bold"
                 >
-                  <Crown className="h-3.5 w-3.5" />
+                  <Crown className="h-3.5 w-3.5 text-[var(--g-gold)]" />
                   Assinar Pro
                   <span className="hidden font-semibold text-[var(--g-accent-text)]/65 sm:inline">
                     · {proPriceLabel}

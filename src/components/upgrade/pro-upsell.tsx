@@ -47,7 +47,7 @@ export function ProUpsell() {
           onClick={handleCta}
           className="btn-primary inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold"
         >
-          <Crown className="h-4 w-4" />
+          <Crown className="h-4 w-4 text-[var(--g-gold)]" />
           {authed ? "Assinar Pro" : "Entrar para assinar"}
         </button>
       </div>

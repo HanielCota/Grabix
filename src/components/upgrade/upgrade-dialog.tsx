@@ -118,7 +118,7 @@ export function UpgradeDialog({ open, onClose }: { open: boolean; onClose: () =>
                 </>
               ) : (
                 <>
-                  <Crown className="h-4 w-4" />
+                  <Crown className="h-4 w-4 text-[var(--g-gold)]" />
                   Pagar {amount}
                 </>
               )}
