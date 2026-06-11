@@ -22,7 +22,6 @@ export const PRO_BENEFITS: readonly PlanBenefit[] = [
   { label: "Downloads diários ilimitados", free: `${free.quota.downloadsPerDay}/dia` },
   { label: "Busca profunda (varre várias páginas)" },
   { label: "Renderização de páginas com JavaScript" },
-  { label: "Extração de vídeos protegidos (Vturb)" },
   { label: `Arquivos de até ${mb(pro.limits.maxFileSizeBytes)} MB`, free: `${mb(free.limits.maxFileSizeBytes)} MB` },
   { label: `ZIP de até ${mb(pro.limits.maxZipSizeBytes)} MB`, free: `${mb(free.limits.maxZipSizeBytes)} MB` },
 ];
