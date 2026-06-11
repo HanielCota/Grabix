@@ -17,6 +17,24 @@ function formatDate(iso?: string | null): string | null {
   }
 }
 
+const DAY_MS = 86_400_000;
+// One-time Pro pass length (mirrors PRO_PASS_DURATION_MS on the server) — used as
+// the bar's full span since we don't store the purchase date.
+const PASS_MS = 31 * DAY_MS;
+
+function proCountdown(periodEnd?: string | null): { days: number; pct: number } | null {
+  if (!periodEnd) return null;
+  const end = new Date(periodEnd).getTime();
+  if (Number.isNaN(end)) return null;
+  const remaining = end - Date.now();
+  if (remaining <= 0) return null;
+  return {
+    days: Math.ceil(remaining / DAY_MS),
+    // Keep a sliver visible while active; fraction of the pass still remaining.
+    pct: Math.max(2, Math.min(100, (remaining / PASS_MS) * 100)),
+  };
+}
+
 export default function ContaPage() {
   const { data: session, status } = useSession();
   const { me } = useMe();
@@ -54,6 +72,14 @@ export default function ContaPage() {
   const plan = me?.plan ?? "free";
   const isPro = plan === "pro";
   const proUntil = formatDate(me?.periodEnd);
+  const countdown = proCountdown(me?.periodEnd);
+  const barColor = !countdown
+    ? "var(--g-gold)"
+    : countdown.days <= 2
+      ? "var(--g-danger)"
+      : countdown.days <= 5
+        ? "#f59e0b"
+        : "var(--g-gold)";
 
   async function handleDelete() {
     setDeleting(true);
@@ -111,9 +137,7 @@ export default function ContaPage() {
             </div>
             <p className="mt-1 text-sm text-[var(--g-sub)]">
               {isPro
-                ? proUntil
-                  ? `Acesso Pro ativo até ${proUntil}.`
-                  : "Acesso Pro ativo."
+                ? "Seu acesso Pro está ativo."
                 : me?.usage?.limit != null
                   ? `${me.usage.used} de ${me.usage.limit} downloads usados hoje.`
                   : "Plano grátis."}
@@ -128,6 +152,31 @@ export default function ContaPage() {
             {isPro ? "Renovar Pro" : `Assinar Pro · ${proPriceLabel}`}
           </button>
         </div>
+
+        {/* Tempo restante do passe Pro */}
+        {isPro && countdown && (
+          <div className="mt-5">
+            <div className="mb-1.5 flex items-center justify-between text-xs">
+              <span className="font-semibold text-[var(--g-ink)]">
+                {countdown.days === 1 ? "Falta 1 dia" : `Faltam ${countdown.days} dias`}
+              </span>
+              {proUntil && <span className="text-[var(--g-muted)]">até {proUntil}</span>}
+            </div>
+            <div
+              className="h-2 w-full overflow-hidden rounded-full bg-[var(--g-surface-3)]"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(countdown.pct)}
+              aria-label="Tempo restante do plano Pro"
+            >
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{ width: `${countdown.pct}%`, background: barColor }}
+              />
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ── Session ── */}
