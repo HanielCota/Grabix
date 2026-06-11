@@ -101,7 +101,7 @@ export default function ContaPage() {
               <span className="text-xs font-semibold uppercase tracking-widest text-[var(--g-sub)]">Plano</span>
               {isPro ? (
                 <span className="inline-flex items-center gap-1 rounded-md border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)] px-1.5 py-0.5 text-[10px] font-bold uppercase text-[var(--g-ink)]">
-                  <Crown size={10} /> Pro
+                  <Crown size={10} className="text-[var(--g-gold)]" /> Pro
                 </span>
               ) : (
                 <span className="inline-flex items-center rounded-md border border-[var(--g-line-hover)] bg-[var(--g-surface-3)] px-1.5 py-0.5 text-[10px] font-bold uppercase text-[var(--g-sub)]">

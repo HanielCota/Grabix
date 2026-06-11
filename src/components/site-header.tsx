@@ -12,7 +12,7 @@ function PlanBadge({ plan }: { plan: "free" | "pro" }) {
   if (plan === "pro") {
     return (
       <span className="inline-flex items-center gap-1 rounded-lg border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)] px-2 py-1 text-xs font-bold text-[var(--g-ink)]">
-        <Crown className="h-3 w-3" /> Pro
+        <Crown className="h-3 w-3 text-[var(--g-gold)]" /> Pro
       </span>
     );
   }

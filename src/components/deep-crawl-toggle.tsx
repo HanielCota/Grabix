@@ -71,7 +71,7 @@ export function DeepCrawlToggle({
         </span>
         {locked ? (
           <span className="inline-flex items-center gap-1 rounded-md border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--g-ink)]">
-            <Crown size={10} /> Pro
+            <Crown size={10} className="text-[var(--g-gold)]" /> Pro
           </span>
         ) : (
           <span className={`hidden text-xs sm:inline ${enabled ? "text-[var(--g-sub)]" : "text-[var(--g-muted)]"}`}>
