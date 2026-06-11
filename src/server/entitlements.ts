@@ -1,7 +1,8 @@
 import { and, eq, sql } from "drizzle-orm";
 import { getDb } from "@/server/db";
 import { pendingEntitlements, subscriptions, usageDaily } from "@/server/db/schema";
-import { FREE_PLAN, getPlan, type Plan } from "@/server/plans";
+import { isPlanId, type Plan, type PlanId } from "@/server/plans";
+import { getEffectivePlan } from "@/server/plans-config";
 
 // ─── Subscription shape shared by webhook + pending-claim ───
 
@@ -23,13 +24,13 @@ function isActive(status: string, currentPeriodEnd: Date | null | undefined): bo
   return false;
 }
 
-/** Resolve the effective plan for a user from their subscription row. */
+/** Resolve the effective (admin-configured) plan for a user. */
 export async function getUserPlan(userId: string): Promise<Plan> {
   const db = getDb();
   const rows = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId)).limit(1);
   const sub = rows[0];
-  if (!sub) return FREE_PLAN;
-  return isActive(sub.status, sub.currentPeriodEnd) ? getPlan(sub.plan) : FREE_PLAN;
+  const planId: PlanId = sub && isActive(sub.status, sub.currentPeriodEnd) && isPlanId(sub.plan) ? sub.plan : "free";
+  return getEffectivePlan(planId);
 }
 
 /** Insert or update the single subscription row for a user. */

@@ -3,8 +3,8 @@
 import { Check, Crown, Loader2, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
+import { usePricing } from "@/hooks/use-pricing";
 import { startCheckout } from "@/lib/billing/checkout";
-import { PRICING } from "@/server/plans";
 
 const BENEFITS = [
   "200 arquivos por análise (free: 10)",
@@ -25,7 +25,8 @@ function splitPrice(label: string): { amount: string; period: string } {
 export function UpgradeDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { amount, period } = splitPrice(PRICING.proPriceLabel);
+  const { proPriceLabel } = usePricing();
+  const { amount, period } = splitPrice(proPriceLabel);
 
   useEffect(() => {
     if (!open) return;

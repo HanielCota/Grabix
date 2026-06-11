@@ -1,4 +1,4 @@
-import { index, integer, pgTable, primaryKey, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, primaryKey, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import type { AdapterAccountType } from "next-auth/adapters";
 
 // ─── Auth.js (NextAuth) core tables ───
@@ -11,6 +11,8 @@ export const users = pgTable("user", {
   email: text("email").unique(),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
+  isAdmin: boolean("isAdmin").notNull().default(false),
+  createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
 });
 
 export const accounts = pgTable(
@@ -110,4 +112,22 @@ export const webhookEvents = pgTable("webhook_event", {
   id: text("id").primaryKey(),
   provider: text("provider").notNull(),
   receivedAt: timestamp("receivedAt", { mode: "date" }).notNull().defaultNow(),
+});
+
+// Admin-editable plan config. Rows override the code defaults (src/server/plans.ts).
+// id = 'free' | 'pro'. downloadsPerDay = -1 means unlimited. priceAmountCents in
+// BRL cents (e.g. 1990 = R$ 19,90), only meaningful for paid plans.
+export const planConfig = pgTable("plan_config", {
+  id: text("id").primaryKey(),
+  maxAssets: integer("maxAssets").notNull(),
+  maxFileSizeBytes: integer("maxFileSizeBytes").notNull(),
+  maxZipSizeBytes: integer("maxZipSizeBytes").notNull(),
+  maxConcurrentDownloads: integer("maxConcurrentDownloads").notNull(),
+  deepCrawl: boolean("deepCrawl").notNull(),
+  jsRendering: boolean("jsRendering").notNull(),
+  protectedVideo: boolean("protectedVideo").notNull(),
+  downloadsPerDay: integer("downloadsPerDay").notNull(),
+  priceAmountCents: integer("priceAmountCents"),
+  priceLabel: text("priceLabel"),
+  updatedAt: timestamp("updatedAt", { mode: "date" }).notNull().defaultNow(),
 });
