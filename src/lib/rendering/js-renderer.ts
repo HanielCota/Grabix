@@ -1,4 +1,6 @@
+import { isPrivateHostname } from "@/lib/url/public-url";
 import { appConfig } from "@/server/config";
+import { validateDnsResolution, validateUrlFormat } from "@/server/security";
 
 /**
  * Renders a page with a headless browser (Playwright) to capture
@@ -109,6 +111,18 @@ export async function renderPage(url: string, signal?: AbortSignal): Promise<Ren
     );
   }
 
+  // ─── SSRF guard ───
+  // The headless browser navigates directly (it does NOT go through safeFetch),
+  // so the SSRF protections must be applied here too. validateUrlFormat rejects
+  // literal private hosts/IPs and non-http(s) schemes; validateDnsResolution
+  // rejects hostnames that resolve to private/internal addresses. Without this a
+  // user could point the renderer at cloud metadata (169.254.169.254) or
+  // internal services. page.route below additionally blocks any redirect or
+  // subresource that targets an internal host.
+  const target = await validateUrlFormat(url);
+  await validateDnsResolution(target.hostname);
+  const safeUrl = target.href;
+
   const timeoutMs = appConfig.limits.fetchTimeoutMs;
   const browser = await getBrowser(pw);
 
@@ -126,9 +140,20 @@ export async function renderPage(url: string, signal?: AbortSignal): Promise<Ren
   signal?.addEventListener("abort", onAbort, { once: true });
 
   try {
-    // Block unnecessary resources to speed up rendering
+    // Block unnecessary resources to speed up rendering, and block any request
+    // (including the main-frame navigation and server-side redirects) that points
+    // at an internal/private host — SSRF defense for redirect-based bypasses.
     // biome-ignore lint/suspicious/noExplicitAny: Playwright route type
     await page.route("**/*", (route: any) => {
+      let reqHost: string | null = null;
+      try {
+        reqHost = new URL(route.request().url()).hostname;
+      } catch {
+        // Unparseable URL (e.g. data:, blob:) — let Playwright handle it.
+      }
+      if (reqHost && isPrivateHostname(reqHost)) {
+        return route.abort();
+      }
       const type = route.request().resourceType();
       if (["font", "stylesheet", "media"].includes(type)) {
         return route.abort();
@@ -136,7 +161,7 @@ export async function renderPage(url: string, signal?: AbortSignal): Promise<Ren
       return route.continue();
     });
 
-    const response = await page.goto(url, {
+    const response = await page.goto(safeUrl, {
       waitUntil: "networkidle",
       timeout: timeoutMs,
     });

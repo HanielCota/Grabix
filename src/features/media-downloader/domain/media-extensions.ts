@@ -80,23 +80,39 @@ export function isAllowedMediaContentType(contentType: string): boolean {
   return ALLOWED_MEDIA_CONTENT_TYPE_PATTERNS.some((pattern) => normalized.includes(pattern));
 }
 
+function extFromSegment(segment: string | undefined): string | null {
+  if (!segment) return null;
+  const dotIndex = segment.lastIndexOf(".");
+  if (dotIndex === -1) return null;
+  const ext = segment.slice(dotIndex + 1).toLowerCase();
+  return ext || null;
+}
+
 export function getExtensionFromUrl(url: string): string | null {
   if (!url) return null;
 
   try {
-    const pathname = new URL(url).pathname;
-    if (!pathname || pathname === "/") return null;
+    const parsed = new URL(url);
 
-    const lastSegment = pathname.split("/").pop();
-    if (!lastSegment) return null;
+    const pathExt = extFromSegment(parsed.pathname.split("/").pop());
+    if (pathExt) return pathExt;
 
-    const dotIndex = lastSegment.lastIndexOf(".");
-    if (dotIndex === -1) return null;
+    // Extensionless path (common for CDN/streaming endpoints): fall back to a
+    // filename embedded in the query string, e.g. ?file=video.mp4 or a proxied
+    // ?u=https%3A%2F%2F.../clip.webm. Only accept known media extensions here to
+    // avoid misreading arbitrary dotted query values.
+    for (const value of parsed.searchParams.values()) {
+      let decoded = value;
+      try {
+        decoded = decodeURIComponent(value);
+      } catch {
+        // keep raw value if it isn't valid percent-encoding
+      }
+      const ext = extFromSegment(decoded.split(/[/\\?#]/).pop());
+      if (ext && isMediaExtension(ext)) return ext;
+    }
 
-    const ext = lastSegment.slice(dotIndex + 1).toLowerCase();
-    if (!ext) return null;
-
-    return ext;
+    return null;
   } catch {
     return null;
   }

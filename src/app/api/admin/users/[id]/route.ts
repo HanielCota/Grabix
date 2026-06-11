@@ -14,11 +14,20 @@ const bodySchema = z.object({
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await requireAdmin();
+    const caller = await requireAdmin();
     const { id } = await params;
     const parsed = bodySchema.safeParse(await request.json());
     if (!parsed.success) {
       return await handleApiError(parsed.error);
+    }
+
+    // Guard against an admin locking themselves out by revoking their own admin
+    // rights — the resulting "no usable admin" state is hard to recover from.
+    if (parsed.data.action === "setAdmin" && parsed.data.value === false && id === caller.id) {
+      return NextResponse.json(
+        { error: { code: "FORBIDDEN", message: "Você não pode remover seu próprio acesso de admin." } },
+        { status: 403 },
+      );
     }
 
     const db = getDb();

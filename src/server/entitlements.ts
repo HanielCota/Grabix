@@ -24,6 +24,12 @@ function isActive(status: string, currentPeriodEnd: Date | null | undefined): bo
   return false;
 }
 
+// Orders paid-through dates so "later access" wins. A null period means "no
+// expiry" (e.g. an admin-granted unlimited Pro), which outranks any dated one.
+function periodRank(end: Date | null | undefined): number {
+  return end ? end.getTime() : Number.POSITIVE_INFINITY;
+}
+
 /** Resolve the effective (admin-configured) plan for a user. */
 export async function getUserPlan(userId: string): Promise<Plan> {
   const db = getDb();
@@ -91,7 +97,10 @@ export async function consumeDownloadQuota(
     })
     .returning();
 
-  const used = row?.downloads ?? amount;
+  // A missing return row means the upsert didn't report a count — fail closed
+  // (deny) rather than assuming `amount`, which would silently pass the quota.
+  if (!row) return { ok: false, used: limit, limit };
+  const used = row.downloads;
   return { ok: used <= limit, used, limit };
 }
 
@@ -139,15 +148,33 @@ export async function claimPendingEntitlements(email: string | null | undefined,
   const pending = await db.select().from(pendingEntitlements).where(eq(pendingEntitlements.email, normalized));
   if (pending.length === 0) return;
 
-  // Apply the most recently created entitlement.
-  const latest = pending.reduce((a, b) => (a.createdAt > b.createdAt ? a : b));
-  await upsertSubscription(userId, {
-    plan: latest.plan,
-    status: latest.status,
-    provider: latest.provider,
-    externalId: latest.externalId,
-    currentPeriodEnd: latest.currentPeriodEnd,
-  });
+  // Only "active" grants are claimable; ignore any terminal state queued earlier.
+  // Among them pick the one that extends access furthest (latest paid-through),
+  // NOT merely the most recently created — "created last" ≠ "expires last".
+  const best = pending
+    .filter((p) => p.status === "active")
+    .reduce<(typeof pending)[number] | null>(
+      (acc, p) => (acc && periodRank(acc.currentPeriodEnd) >= periodRank(p.currentPeriodEnd) ? acc : p),
+      null,
+    );
 
+  if (best) {
+    // Never downgrade or shorten a subscription the user already holds: only
+    // apply the pending grant if the user has no active sub or the grant reaches
+    // beyond the current paid-through date.
+    const existing = (await db.select().from(subscriptions).where(eq(subscriptions.userId, userId)).limit(1))[0];
+    const existingActive = existing ? isActive(existing.status, existing.currentPeriodEnd) : false;
+    if (!existingActive || periodRank(best.currentPeriodEnd) > periodRank(existing?.currentPeriodEnd)) {
+      await upsertSubscription(userId, {
+        plan: best.plan,
+        status: best.status,
+        provider: best.provider,
+        externalId: best.externalId,
+        currentPeriodEnd: best.currentPeriodEnd,
+      });
+    }
+  }
+
+  // Clear every pending row for this email (claimed, superseded, or non-active).
   await db.delete(pendingEntitlements).where(eq(pendingEntitlements.email, normalized));
 }

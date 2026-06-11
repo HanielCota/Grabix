@@ -9,6 +9,11 @@ function brToday(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date());
 }
 
+// Escape LIKE/ILIKE wildcards so a search term like "%" matches literally.
+function escapeLike(s: string): string {
+  return s.replace(/[\\%_]/g, (c) => `\\${c}`);
+}
+
 function isProActive(status: string | null, end: Date | null): boolean {
   if (!status) return false;
   if (status === "active") return !end || end.getTime() > Date.now();
@@ -38,7 +43,7 @@ export async function GET(request: NextRequest) {
       .from(users)
       .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
       .leftJoin(usageDaily, and(eq(usageDaily.userId, users.id), eq(usageDaily.day, brToday())))
-      .where(q ? or(ilike(users.email, `%${q}%`), ilike(users.name, `%${q}%`)) : undefined)
+      .where(q ? or(ilike(users.email, `%${escapeLike(q)}%`), ilike(users.name, `%${escapeLike(q)}%`)) : undefined)
       .orderBy(desc(users.createdAt))
       .limit(200);
 

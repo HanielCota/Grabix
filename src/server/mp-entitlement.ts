@@ -24,9 +24,20 @@ export function mapPreapprovalStatus(pre: MpPreapproval, now = Date.now()): Enti
         currentPeriodEnd: periodEnd ?? new Date(now + PRO_PASS_DURATION_MS),
       };
     case "cancelled":
-      return { plan: "pro", status: "canceled", provider: "mercadopago", externalId, currentPeriodEnd: periodEnd };
+      // A cancelled preapproval usually has no next_payment_date, so periodEnd is
+      // null. Emit `undefined` (not null) so upsertSubscription preserves the
+      // already-paid-through date and the user keeps access until it actually ends.
+      return {
+        plan: "pro",
+        status: "canceled",
+        provider: "mercadopago",
+        externalId,
+        currentPeriodEnd: periodEnd ?? undefined,
+      };
     case "paused":
-      return { plan: "pro", status: "past_due", provider: "mercadopago", externalId, currentPeriodEnd: null };
+      // past_due revokes access immediately; keep any stored period (undefined →
+      // preserved on upsert) so it isn't lost if the subscription later resumes.
+      return { plan: "pro", status: "past_due", provider: "mercadopago", externalId, currentPeriodEnd: undefined };
     default:
       // "pending" and anything else: nothing to grant yet.
       return null;

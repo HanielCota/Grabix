@@ -211,13 +211,13 @@ async function startSSEStream(
 
       for (const part of parts) {
         if (!part.trim()) continue;
-        processSSEEvent(part, dispatch);
+        processSSEEvent(part, dispatch, controller.signal);
       }
     }
 
     // Process remaining buffer
     if (buffer.trim()) {
-      processSSEEvent(buffer, dispatch);
+      processSSEEvent(buffer, dispatch, controller.signal);
     }
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") return;
@@ -226,7 +226,12 @@ async function startSSEStream(
   }
 }
 
-function processSSEEvent(raw: string, dispatch: React.Dispatch<Action>) {
+function processSSEEvent(raw: string, dispatch: React.Dispatch<Action>, signal: AbortSignal) {
+  // Drop events from a stream that has already been aborted (e.g. the user
+  // started a new crawl). Without this, a late `crawl_complete` from the previous
+  // request could land after the new START and mark it complete with stale results.
+  if (signal.aborted) return;
+
   let eventName = "";
   const dataLines: string[] = [];
 

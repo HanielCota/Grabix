@@ -68,12 +68,19 @@ export async function recordUrlFailure(input: RecordUrlFailureInput): Promise<vo
   }
 }
 
+// Escape LIKE/ILIKE wildcards so a search term like "%" or "_" is matched
+// literally instead of becoming a match-everything pattern.
+function escapeLike(s: string): string {
+  return s.replace(/[\\%_]/g, (c) => `\\${c}`);
+}
+
 export async function listUrlFailures(opts: { q?: string; includeResolved?: boolean }) {
   const db = getDb();
   const conds = [];
   if (!opts.includeResolved) conds.push(eq(urlFailures.resolved, false));
   if (opts.q) {
-    conds.push(or(ilike(urlFailures.url, `%${opts.q}%`), ilike(urlFailures.host, `%${opts.q}%`)));
+    const term = `%${escapeLike(opts.q)}%`;
+    conds.push(or(ilike(urlFailures.url, term), ilike(urlFailures.host, term)));
   }
   return db
     .select()
