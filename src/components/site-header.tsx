@@ -75,7 +75,7 @@ export function SiteHeader() {
               {plan === "free" && (
                 <button
                   type="button"
-                  onClick={openUpgrade}
+                  onClick={() => openUpgrade()}
                   className="btn-primary inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-bold"
                 >
                   <Crown className="h-3.5 w-3.5 text-[var(--g-gold)]" />

@@ -159,7 +159,7 @@ export function MediaGallery({ result }: MediaGalleryProps) {
       if (!res.ok) {
         if (res.status === 402) {
           setZipMsg(null);
-          openUpgrade();
+          openUpgrade("o download em ZIP");
           return;
         }
         const data = await res.json();
@@ -303,10 +303,10 @@ export function MediaGallery({ result }: MediaGalleryProps) {
           </p>
           <button
             type="button"
-            onClick={openUpgrade}
+            onClick={() => openUpgrade("todas as mídias da página")}
             className="btn-primary inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl px-4 text-xs font-bold"
           >
-            <Crown className="h-3.5 w-3.5" />
+            <Crown className="h-3.5 w-3.5 text-[var(--g-gold)]" />
             Assinar Pro
           </button>
         </div>

@@ -59,7 +59,7 @@ export const MediaCard = memo(function MediaCard({ asset, index, selected, onTog
         // Quota/Pro-gated: surface the upgrade path instead of a dead-end error,
         // matching the ZIP download flow.
         if (response.status === 402) {
-          openUpgrade();
+          openUpgrade("downloads sem limite diário");
           return;
         }
         const data = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;

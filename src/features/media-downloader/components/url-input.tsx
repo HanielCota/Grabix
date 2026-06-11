@@ -149,7 +149,7 @@ export function UrlInput({ onSubmit, isLoading, resetKey }: UrlInputProps) {
           config={crawlConfig}
           onConfigChange={setCrawlConfig}
           locked={deepLocked}
-          onLockedClick={openUpgrade}
+          onLockedClick={() => openUpgrade("o Deep Crawl")}
         />
 
         {/* How it works + example */}

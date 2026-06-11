@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Crown, Loader2, X } from "lucide-react";
+import { Check, Crown, Loader2, Sparkles, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { usePricing } from "@/hooks/use-pricing";
@@ -13,7 +13,16 @@ function splitPrice(label: string): { amount: string; period: string } {
   return { amount: label.slice(0, idx).trim(), period: label.slice(idx + 1).trim() };
 }
 
-export function UpgradeDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function UpgradeDialog({
+  open,
+  onClose,
+  reason,
+}: {
+  open: boolean;
+  onClose: () => void;
+  /** Optional feature the user just tried to use, for a contextual headline. */
+  reason?: string | null;
+}) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { proPriceLabel } = usePricing();
@@ -89,6 +98,14 @@ export function UpgradeDialog({ open, onClose }: { open: boolean; onClose: () =>
               {period && <span className="text-sm font-medium text-[var(--g-sub)]">/{period}</span>}
             </div>
             <p className="mt-1 text-xs text-[var(--g-muted)]">Pague uma vez · 30 dias de acesso · Pix ou cartão</p>
+
+            {/* Contextual hook — why the dialog opened */}
+            {reason && (
+              <div className="mt-4 flex items-center gap-2 rounded-xl border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)] px-3 py-2 text-xs font-medium text-[var(--g-ink)]">
+                <Sparkles className="h-3.5 w-3.5 shrink-0 text-[var(--g-gold)]" />
+                <span>Desbloqueie {reason} com o Grabix Pro.</span>
+              </div>
+            )}
 
             {/* Benefits */}
             <ul className="mt-5 space-y-2.5">
