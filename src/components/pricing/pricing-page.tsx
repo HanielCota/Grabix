@@ -1,13 +1,13 @@
 "use client";
 
-import { Check, Crown, Loader2, Minus, Sparkles } from "lucide-react";
+import { Check, Crown, Loader2, Sparkles } from "lucide-react";
 import { signIn, useSession } from "next-auth/react";
 import { useState } from "react";
 import { GoogleIcon } from "@/components/icons/google-icon";
+import { PlanComparisonTable } from "@/components/pricing/plan-comparison-table";
 import { useMe } from "@/hooks/use-me";
 import { usePricing } from "@/hooks/use-pricing";
 import { startCheckout } from "@/lib/billing/checkout";
-import { PLAN_COMPARISON, type PlanComparisonRow } from "@/lib/plans/benefits";
 
 function splitPrice(label: string): { amount: string; period: string } {
   const idx = label.indexOf("/");
@@ -39,35 +39,6 @@ const FAQ: readonly { q: string; a: string }[] = [
     a: "Sim. O plano grátis não custa nada e já permite extrair e baixar mídias todos os dias, dentro dos limites da tabela acima.",
   },
 ];
-
-function Cell({ value }: { value: string | boolean }) {
-  if (typeof value === "boolean") {
-    return value ? (
-      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[var(--g-success-bg)] text-[var(--g-success)]">
-        <Check className="h-3.5 w-3.5" strokeWidth={3} />
-      </span>
-    ) : (
-      <Minus className="h-4 w-4 text-[var(--g-muted)]" aria-label="Não incluído" />
-    );
-  }
-  return <span className="font-semibold tabular-nums text-[var(--g-ink)]">{value}</span>;
-}
-
-function ComparisonRow({ row }: { row: PlanComparisonRow }) {
-  return (
-    <tr className="border-t border-[var(--g-line)]">
-      <th scope="row" className="py-3 pr-3 text-left text-sm font-medium text-[var(--g-sub)]">
-        {row.feature}
-      </th>
-      <td className="px-3 py-3 text-center text-sm text-[var(--g-sub)]">
-        <Cell value={row.free} />
-      </td>
-      <td className="bg-[var(--g-accent-soft)]/40 px-3 py-3 text-center text-sm">
-        <Cell value={row.pro} />
-      </td>
-    </tr>
-  );
-}
 
 export function PricingPage() {
   const { status } = useSession();
@@ -198,28 +169,8 @@ export function PricingPage() {
       {/* ── Comparison table ── */}
       <section className="mt-12">
         <h2 className="text-lg font-bold tracking-[-0.02em] text-[var(--g-ink)]">Comparativo completo</h2>
-        <div className="mt-4 overflow-hidden rounded-2xl border border-[var(--g-line)] bg-[var(--g-surface-1)]">
-          <table className="w-full border-collapse">
-            <caption className="sr-only">Comparativo de recursos entre os planos Grátis e Pro</caption>
-            <thead>
-              <tr>
-                <th className="py-3 pl-5 pr-3 text-left text-xs font-semibold uppercase tracking-widest text-[var(--g-muted)]">
-                  Recurso
-                </th>
-                <th className="px-3 py-3 text-center text-xs font-semibold uppercase tracking-widest text-[var(--g-muted)]">
-                  Grátis
-                </th>
-                <th className="bg-[var(--g-accent-soft)]/40 px-3 py-3 text-center text-xs font-bold uppercase tracking-widest text-[var(--g-ink)]">
-                  Pro
-                </th>
-              </tr>
-            </thead>
-            <tbody className="[&_th[scope=row]]:pl-5">
-              {PLAN_COMPARISON.map((row) => (
-                <ComparisonRow key={row.feature} row={row} />
-              ))}
-            </tbody>
-          </table>
+        <div className="mt-4">
+          <PlanComparisonTable />
         </div>
       </section>
 

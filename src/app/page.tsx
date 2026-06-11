@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { signIn, useSession } from "next-auth/react";
 import { useState } from "react";
 import { GoogleIcon } from "@/components/icons/google-icon";
+import { LandingSections } from "@/components/landing/landing-sections";
 import { ProUpsell } from "@/components/upgrade/pro-upsell";
 import { MediaDownloader } from "@/features/media-downloader/components/media-downloader";
 import { ErrorBoundary } from "./error-boundary";
@@ -96,6 +97,9 @@ export default function Home() {
 
       {/* ── Pro value, visible up front for non-subscribers (hidden once results show) ── */}
       {!active && <ProUpsell />}
+
+      {/* ── Marketing content: how it works, supported sites, plans, FAQ (hidden once results show) ── */}
+      {!active && <LandingSections />}
 
       {/* ── Footer ── */}
       <footer className="mt-16 border-t border-[var(--g-line)] pt-5 text-center text-sm leading-relaxed text-[var(--g-muted)]">
