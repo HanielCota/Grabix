@@ -64,7 +64,7 @@ export function SiteHeader() {
                 <a
                   href="/admin"
                   title="Painel admin"
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--g-line-hover)] bg-[var(--g-surface-3)] text-[var(--g-sub)] transition-all hover:bg-[var(--g-line)] hover:text-[var(--g-ink)]"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--g-line-hover)] bg-[var(--g-surface-3)] text-[var(--g-sub)] transition-all hover:bg-[var(--g-line)] hover:text-[var(--g-ink)]"
                 >
                   <LayoutDashboard className="h-4 w-4" />
                 </a>
@@ -75,7 +75,7 @@ export function SiteHeader() {
                 <button
                   type="button"
                   onClick={openUpgrade}
-                  className="btn-primary inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-bold"
+                  className="btn-primary inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-bold"
                 >
                   <Crown className="h-3.5 w-3.5" />
                   Assinar Pro
@@ -88,7 +88,7 @@ export function SiteHeader() {
                 type="button"
                 onClick={() => signOut()}
                 aria-label="Sair"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--g-line-hover)] bg-[var(--g-surface-3)] text-[var(--g-sub)] transition-all hover:bg-[var(--g-line)] hover:text-[var(--g-ink)]"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--g-line-hover)] bg-[var(--g-surface-3)] text-[var(--g-sub)] transition-all hover:bg-[var(--g-line)] hover:text-[var(--g-ink)]"
               >
                 <LogOut className="h-4 w-4" />
               </button>
@@ -99,7 +99,7 @@ export function SiteHeader() {
             <button
               type="button"
               onClick={() => signIn("google")}
-              className="btn-primary inline-flex h-8 items-center rounded-lg px-4 text-xs font-bold"
+              className="btn-primary inline-flex h-9 items-center rounded-lg px-4 text-xs font-bold"
             >
               Entrar
             </button>

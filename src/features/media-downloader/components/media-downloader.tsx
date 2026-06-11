@@ -72,6 +72,9 @@ export function MediaDownloader({ onActiveChange }: { onActiveChange?: (active: 
 
       requestAnimationFrame(() => {
         resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        // Move keyboard focus into the results region (the submit button that had
+        // focus is gone), so Tab continues from here and SR users land on results.
+        resultsRef.current?.focus({ preventScroll: true });
       });
     } else if (deepCrawl.status === "error" && deepCrawl.error) {
       setState((prev) => {
@@ -166,6 +169,9 @@ export function MediaDownloader({ onActiveChange }: { onActiveChange?: (active: 
 
       requestAnimationFrame(() => {
         resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        // Move keyboard focus into the results region (the submit button that had
+        // focus is gone), so Tab continues from here and SR users land on results.
+        resultsRef.current?.focus({ preventScroll: true });
       });
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
@@ -265,7 +271,7 @@ export function MediaDownloader({ onActiveChange }: { onActiveChange?: (active: 
         )}
       </AnimatePresence>
 
-      <div ref={resultsRef}>
+      <div ref={resultsRef} tabIndex={-1} className="outline-none">
         <AnimatePresence mode="wait">
           {/* Standard loading */}
           {state.status === "loading" && (
@@ -273,6 +279,8 @@ export function MediaDownloader({ onActiveChange }: { onActiveChange?: (active: 
               key="loading"
               {...fadeIn}
               transition={sectionTransition}
+              role="status"
+              aria-live="polite"
               className="rounded-2xl border border-[var(--g-line-hover)] bg-[var(--g-surface-1)] p-6"
             >
               <div className="flex items-center gap-4">

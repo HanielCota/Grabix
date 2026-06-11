@@ -35,9 +35,14 @@ async function fetchAssetStream(
     const contentType = response.headers.get("content-type") ?? "";
     if (!isAllowedMediaContentType(contentType)) return null;
 
-    const contentLength = response.headers.get("content-length");
-    if (contentLength && parseInt(contentLength, 10) > appConfig.limits.maxFileSizeBytes) {
-      return null;
+    // Skip an early reject only when the declared size is a valid number over the
+    // limit; a non-numeric Content-Length (NaN) falls through to the stream guard.
+    const contentLengthRaw = response.headers.get("content-length");
+    if (contentLengthRaw) {
+      const declaredLength = Number.parseInt(contentLengthRaw, 10);
+      if (Number.isFinite(declaredLength) && declaredLength > appConfig.limits.maxFileSizeBytes) {
+        return null;
+      }
     }
 
     const maxBytes = appConfig.limits.maxFileSizeBytes;

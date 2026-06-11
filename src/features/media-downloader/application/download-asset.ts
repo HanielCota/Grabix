@@ -58,8 +58,11 @@ export async function downloadAsset(
     throw Errors.invalidMediaType();
   }
 
+  // Guard against a non-numeric Content-Length: parseInt("abc") is NaN, which
+  // would otherwise leak into the response header as "Content-Length: NaN".
   const contentLengthRaw = response.headers.get("content-length");
-  const contentLength = contentLengthRaw ? parseInt(contentLengthRaw, 10) : null;
+  const parsedLength = contentLengthRaw ? Number.parseInt(contentLengthRaw, 10) : null;
+  const contentLength = parsedLength != null && Number.isFinite(parsedLength) ? parsedLength : null;
 
   if (contentLength != null && contentLength > maxBytes) {
     throw Errors.fileTooLarge();

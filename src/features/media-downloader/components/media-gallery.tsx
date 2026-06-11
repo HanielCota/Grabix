@@ -22,6 +22,7 @@ export function MediaGallery({ result }: MediaGalleryProps) {
   const [zipMsg, setZipMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const zipAbortRef = useRef<AbortController | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
   const { open: openUpgrade } = useUpgrade();
   const { proPriceLabel } = usePricing();
 
@@ -30,6 +31,13 @@ export function MediaGallery({ result }: MediaGalleryProps) {
       zipAbortRef.current?.abort();
     };
   }, []);
+
+  // Auto-dismiss the success toast (errors stay until the user retries/acts).
+  useEffect(() => {
+    if (zipMsg?.type !== "ok") return;
+    const timer = setTimeout(() => setZipMsg(null), 4000);
+    return () => clearTimeout(timer);
+  }, [zipMsg]);
 
   // ─── Derived data ───
 
@@ -50,6 +58,23 @@ export function MediaGallery({ result }: MediaGalleryProps) {
 
   const visible = filtered.slice(0, visibleCount);
   const hasMore = visibleCount < filtered.length;
+
+  // Auto-load the next page when the sentinel nears the viewport (infinite scroll).
+  // Each loaded batch pushes the sentinel well past the 400px margin, so it only
+  // re-fires after the user scrolls further; the button below is the manual fallback.
+  useEffect(() => {
+    if (!hasMore) return;
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) setVisibleCount((c) => c + PAGE_SIZE);
+      },
+      { rootMargin: "400px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore]);
 
   // ─── Selection ───
 
@@ -290,6 +315,8 @@ export function MediaGallery({ result }: MediaGalleryProps) {
       {/* ZIP feedback */}
       {zipMsg && (
         <div
+          role="status"
+          aria-live="polite"
           className={`rounded-xl px-4 py-3 text-sm font-medium ${
             zipMsg.type === "ok"
               ? "border border-[var(--g-success-border)] bg-[var(--g-success-bg)] text-[var(--g-success)]"
@@ -329,6 +356,7 @@ export function MediaGallery({ result }: MediaGalleryProps) {
 
           {hasMore && (
             <div className="text-center">
+              <div ref={sentinelRef} aria-hidden="true" className="pointer-events-none h-px w-full" />
               <button
                 type="button"
                 onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
