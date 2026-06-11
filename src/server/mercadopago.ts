@@ -21,6 +21,7 @@ export interface MpPreapproval {
   payer_email?: string;
   next_payment_date?: string;
   reason?: string;
+  auto_recurring?: { transaction_amount?: number; currency_id?: string };
 }
 
 /** Create a monthly subscription tied to a user (external_reference = userId). */
@@ -90,6 +91,10 @@ export interface MpPayment {
   external_reference?: string;
   payer?: { email?: string };
   date_approved?: string | null;
+  // Amount actually paid — used to verify the payment matches the Pro price so a
+  // user can't get Pro by paying an arbitrary (smaller) amount.
+  transaction_amount?: number;
+  currency_id?: string;
 }
 
 /** Create a one-time checkout preference tied to a user (external_reference = userId). */

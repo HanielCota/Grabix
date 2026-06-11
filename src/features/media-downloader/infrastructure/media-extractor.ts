@@ -32,7 +32,10 @@ function pushAttr(el: CheerioEl, attr: string, tag: string, refs: RawMediaRef[],
 }
 
 function parseSrcset(srcset: string): string[] {
-  return srcset
+  // `data:` URIs contain commas and would be shredded into invalid fragments by a
+  // naive comma split (and we can't download them anyway), so strip them first.
+  const cleaned = srcset.includes("data:") ? srcset.replace(/data:[^\s,]*,[^\s,]*/gi, "") : srcset;
+  return cleaned
     .split(",")
     .map((entry) => entry.trim().split(/\s+/)[0])
     .filter(Boolean);

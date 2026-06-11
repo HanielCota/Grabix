@@ -21,16 +21,25 @@ export async function POST(request: NextRequest) {
     }
 
     const input = parsedInput.data;
-    const result = await downloadAsset(input.url, request.signal, plan.limits.maxFileSizeBytes);
-    const finalName = result.fileName ?? input.fileName;
 
-    // Count the download only after the asset is confirmed fetchable, so 404s /
-    // oversized files don't burn the user's daily quota.
+    // Reserve quota BEFORE the outbound fetch so an over-quota user can't keep
+    // triggering unlimited server-side downloads (bandwidth/cost abuse). The
+    // reservation is refunded below if the fetch itself fails, so 404s / oversized
+    // files still don't burn the user's daily quota.
     const quota = await consumeDownloadQuota(user.id, plan);
     if (!quota.ok) {
       await refundDownloadQuota(user.id, plan);
       throw Errors.quotaExceeded();
     }
+
+    let result: Awaited<ReturnType<typeof downloadAsset>>;
+    try {
+      result = await downloadAsset(input.url, request.signal, plan.limits.maxFileSizeBytes);
+    } catch (err) {
+      await refundDownloadQuota(user.id, plan);
+      throw err;
+    }
+    const finalName = result.fileName ?? input.fileName;
 
     return new Response(result.stream, {
       headers: {

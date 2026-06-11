@@ -81,7 +81,10 @@ export async function extractVturbVideos(
 
     const pathMatch = resolved.match(VTURB_PLAYER_PATH_PATTERN);
     if (pathMatch) {
-      const basePath = resolved.replace(/\/(embed\.html|player\.js).*$/, "");
+      // Strip the trailing file (embed.html/player.js) AND any existing `/v4`
+      // segment, otherwise an iframe like `.../players/{id}/v4/embed.html` yields
+      // a doubled `.../v4/v4/player.js` that 404s.
+      const basePath = resolved.replace(/\/(embed\.html|player\.js).*$/, "").replace(/\/v4$/, "");
       scriptUrls.push({ src: `${basePath}/v4/player.js`, accountId: pathMatch[1], playerId: pathMatch[2] });
       scriptUrls.push({ src: `${basePath}/player.js`, accountId: pathMatch[1], playerId: pathMatch[2] });
     }
@@ -185,24 +188,31 @@ async function fetchAndParsePlayerScript(
  * cdn, oid, and video.id fields, then constructing the HLS URL.
  */
 function extractFromV4Config(content: string): ExtractedVideo[] {
+  // `cdn` and `oid` are account-level: a v4 player.js carries exactly one of each.
+  // The video id is per-video. We pair the single cdn/oid with each distinct
+  // video id found, rather than stitching the first match of three independent
+  // patterns (which, in a multi-video file, could fabricate a URL from unrelated
+  // objects).
   const cdnMatch = content.match(V4_CDN_PATTERN);
   const oidMatch = content.match(V4_OID_PATTERN);
-  const videoIdMatch = content.match(V4_VIDEO_ID_PATTERN);
-
-  if (!cdnMatch || !oidMatch || !videoIdMatch) return [];
+  if (!cdnMatch || !oidMatch) return [];
 
   const cdn = cdnMatch[1];
   const oid = oidMatch[1];
-  const videoId = videoIdMatch[1];
 
-  // Construct the HLS master playlist URL
-  const hlsUrl = `https://${cdn}/${oid}/${videoId}/main.m3u8`;
+  const videoIds = new Set<string>();
+  for (const m of content.matchAll(new RegExp(V4_VIDEO_ID_PATTERN.source, "g"))) {
+    if (m[1]) videoIds.add(m[1]);
+  }
+  if (videoIds.size === 0) return [];
 
-  // Try to extract thumbnail/cover
   const coverMatch = content.match(V4_VIDEO_COVER_PATTERN);
   const thumbnailUrl = coverMatch?.[1] ?? null;
 
-  return [{ url: hlsUrl, thumbnailUrl }];
+  return Array.from(videoIds, (videoId) => ({
+    url: `https://${cdn}/${oid}/${videoId}/main.m3u8`,
+    thumbnailUrl,
+  }));
 }
 
 /**

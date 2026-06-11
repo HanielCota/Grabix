@@ -47,3 +47,20 @@ test("preapproval cancelled/paused/pending mapping", () => {
   assert.equal(mapPreapprovalStatus({ id: "s", status: "paused" }, NOW)?.status, "past_due");
   assert.equal(mapPreapprovalStatus({ id: "s", status: "pending" }, NOW), null);
 });
+
+test("cancelled without a date leaves the period untouched (undefined, not null)", () => {
+  // undefined → upsertSubscription preserves the existing paid-through date so the
+  // user keeps access until it actually ends.
+  const e = mapPreapprovalStatus({ id: "s", status: "cancelled" }, NOW);
+  assert.equal(e?.currentPeriodEnd, undefined);
+});
+
+test("cancelled with a next_payment_date carries that date", () => {
+  const e = mapPreapprovalStatus({ id: "s", status: "cancelled", next_payment_date: "2030-01-01T00:00:00Z" }, NOW);
+  assert.equal(e?.currentPeriodEnd?.toISOString(), "2030-01-01T00:00:00.000Z");
+});
+
+test("paused leaves the period untouched (undefined)", () => {
+  const e = mapPreapprovalStatus({ id: "s", status: "paused" }, NOW);
+  assert.equal(e?.currentPeriodEnd, undefined);
+});

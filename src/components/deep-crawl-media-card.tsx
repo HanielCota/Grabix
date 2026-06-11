@@ -129,11 +129,18 @@ export const DeepCrawlMediaCard = memo(function DeepCrawlMediaCard({
         </div>
         <button
           type="button"
-          onClick={(e) => {
+          onClick={async (e) => {
             e.stopPropagation();
-            navigator.clipboard.writeText(externalUrl);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 1500);
+            // navigator.clipboard is undefined on insecure origins and writeText
+            // can reject (permission denied) — only show "copied" on real success.
+            if (!navigator.clipboard) return;
+            try {
+              await navigator.clipboard.writeText(externalUrl);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1500);
+            } catch {
+              // Copy failed; leave the button in its default state.
+            }
           }}
           className="relative z-30 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[var(--g-line)] bg-[var(--g-surface-2)] text-[var(--g-muted)] transition-all hover:border-[var(--g-line-hover)] hover:bg-[var(--g-surface-3)] hover:text-[var(--g-ink)]"
           aria-label={copied ? "URL copiada" : "Copiar URL"}

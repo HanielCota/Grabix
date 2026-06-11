@@ -276,7 +276,7 @@ const twitter: VideoPlatform = {
     return createVideoInfo({
       platform: "twitter",
       videoId: match[1],
-      canonicalUrl: `https://${normalizeHost(url.hostname)}/${url.pathname.replace(/\/+$/, "")}`,
+      canonicalUrl: `https://${normalizeHost(url.hostname)}${url.pathname.replace(/\/+$/, "")}`,
       kind: "video",
       confidence: 0.9,
     });

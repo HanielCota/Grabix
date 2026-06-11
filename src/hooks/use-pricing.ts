@@ -17,7 +17,13 @@ function fetchLabel(): Promise<string> {
         cached = (d?.proPriceLabel as string) || PRICING.proPriceLabel;
         return cached;
       })
-      .catch(() => PRICING.proPriceLabel);
+      .catch(() => {
+        // Don't poison the cache with the fallback: clear `inflight` so a later
+        // mount retries the fetch once the network recovers. Until then callers
+        // get the build-time default.
+        inflight = null;
+        return PRICING.proPriceLabel;
+      });
   }
   return inflight;
 }
