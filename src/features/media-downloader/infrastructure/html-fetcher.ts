@@ -13,6 +13,41 @@ const HTTP_ERROR_MESSAGES: Record<number, string> = {
   503: "O servidor da pagina esta indisponivel no momento. Tenta de novo depois.",
 };
 
+// Turn a low-level connection failure into an actionable reason (shown in the
+// admin "URLs com falha" log). undici wraps the socket error in `err.cause`.
+function networkErrorReason(err: unknown): string {
+  let cause: unknown = err;
+  if (err instanceof Error && err.cause) cause = err.cause;
+  const code =
+    cause && typeof cause === "object" && "code" in cause && typeof (cause as { code: unknown }).code === "string"
+      ? (cause as { code: string }).code
+      : undefined;
+
+  switch (code) {
+    case "ENOTFOUND":
+    case "EAI_AGAIN":
+      return "Dominio nao encontrado (DNS).";
+    case "ECONNREFUSED":
+      return "Conexao recusada pelo servidor.";
+    case "ECONNRESET":
+    case "UND_ERR_SOCKET":
+      return "Conexao encerrada pelo servidor (pode estar bloqueando bots ou IPs de datacenter).";
+    case "ETIMEDOUT":
+    case "UND_ERR_CONNECT_TIMEOUT":
+      return "Tempo de conexao esgotado.";
+    case "EHOSTUNREACH":
+    case "ENETUNREACH":
+      return "Servidor inacessivel.";
+    case "CERT_HAS_EXPIRED":
+    case "DEPTH_ZERO_SELF_SIGNED_CERT":
+    case "UNABLE_TO_VERIFY_LEAF_SIGNATURE":
+    case "ERR_TLS_CERT_ALTNAME_INVALID":
+      return "Certificado SSL invalido.";
+    default:
+      return code ? `Erro de rede (${code}).` : "Erro de rede.";
+  }
+}
+
 export async function fetchPageHtml(
   rawUrl: string,
   signal?: AbortSignal,
@@ -85,7 +120,7 @@ async function fetchWithHttp(rawUrl: string, signal?: AbortSignal): Promise<{ ht
     if (err instanceof Error && (err.name === "AbortError" || err.name === "TimeoutError")) {
       throw Errors.fetchFailed("Timeout ao buscar página.");
     }
-    throw Errors.fetchFailed("Erro de rede.");
+    throw Errors.fetchFailed(networkErrorReason(err));
   }
 
   if (!response.ok) {
