@@ -16,6 +16,7 @@ const HTTP_ERROR_MESSAGES: Record<number, string> = {
 export async function fetchPageHtml(
   rawUrl: string,
   signal?: AbortSignal,
+  opts?: { allowJsRendering?: boolean },
 ): Promise<{
   html: string;
   resolvedUrl: string;
@@ -24,8 +25,8 @@ export async function fetchPageHtml(
     throw Errors.invalidUrl("URL não pode ser vazia.");
   }
 
-  // Try JS rendering first when enabled
-  if (await isJsRenderingAvailable()) {
+  // Try JS rendering first when enabled AND the caller's plan allows it.
+  if (opts?.allowJsRendering !== false && (await isJsRenderingAvailable())) {
     return fetchWithJsRendering(rawUrl, signal);
   }
 

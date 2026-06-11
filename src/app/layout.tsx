@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { AuthProvider } from "@/components/auth/session-provider";
+import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
 const geist = Geist({
@@ -19,7 +21,7 @@ const siteUrl = "https://grabix.app";
 export const metadata: Metadata = {
   title: "Grabix — Extraia mídias de qualquer página",
   description:
-    "Cole uma URL e extraia todas as imagens e vídeos públicos. Baixe um por um ou tudo em ZIP. Sem cadastro, sem login.",
+    "Cole uma URL e extraia todas as imagens e vídeos públicos. Baixe um por um ou tudo em ZIP. Plano grátis e Pro.",
   metadataBase: new URL(siteUrl),
   openGraph: {
     title: "Grabix — Extraia mídias de qualquer página",
@@ -47,7 +49,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         suppressHydrationWarning
         className="min-h-screen bg-[var(--g-bg)] font-sans text-[var(--g-ink)] antialiased"
       >
-        {children}
+        <AuthProvider>
+          <SiteHeader />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

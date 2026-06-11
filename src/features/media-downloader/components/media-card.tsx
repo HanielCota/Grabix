@@ -23,7 +23,6 @@ export const MediaCard = memo(function MediaCard({ asset, index, selected, onTog
   const [copied, setCopied] = useState(false);
   const isImage = asset.type === "IMAGE";
   const isSvg = asset.extension === "svg";
-  const downloadUrl = `/api/download?url=${encodeURIComponent(asset.url)}&fileName=${encodeURIComponent(asset.fileName)}`;
 
   async function handleCopy(e: React.MouseEvent) {
     e.stopPropagation();
@@ -38,7 +37,11 @@ export const MediaCard = memo(function MediaCard({ asset, index, selected, onTog
     setDownloading(true);
     setDownloadMessage(null);
     try {
-      const response = await fetch(downloadUrl);
+      const response = await fetch("/api/download", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: asset.url, fileName: asset.fileName }),
+      });
       if (!response.ok) {
         const data = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;
         setDownloadMessage(data?.error?.message ?? "Falha ao baixar o arquivo.");

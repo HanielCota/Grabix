@@ -1,48 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
-
-// ─── Rate limiter (in-memory, per IP) ───
-
-interface RateBucket {
-  count: number;
-  resetAt: number;
-}
-
-const rateLimits = new Map<string, RateBucket>();
-const WINDOW_MS = 60_000;
-const MAX_REQUESTS = 30;
-const CLEANUP_INTERVAL = 5 * 60_000;
-
-let lastCleanup = Date.now();
-
-function cleanup() {
-  const now = Date.now();
-  if (now - lastCleanup < CLEANUP_INTERVAL) return;
-  lastCleanup = now;
-  for (const [key, bucket] of rateLimits) {
-    if (now > bucket.resetAt) rateLimits.delete(key);
-  }
-}
-
-function isRateLimited(ip: string): { limited: boolean; remaining: number; resetAt: number } {
-  cleanup();
-  const now = Date.now();
-  const bucket = rateLimits.get(ip);
-
-  if (!bucket || now > bucket.resetAt) {
-    rateLimits.set(ip, { count: 1, resetAt: now + WINDOW_MS });
-    return { limited: false, remaining: MAX_REQUESTS - 1, resetAt: now + WINDOW_MS };
-  }
-
-  bucket.count++;
-  const remaining = Math.max(0, MAX_REQUESTS - bucket.count);
-  return { limited: bucket.count > MAX_REQUESTS, remaining, resetAt: bucket.resetAt };
-}
+import { checkRateLimit, RATE_LIMIT } from "@/server/rate-limit";
 
 // ─── Allowed methods per route ───
 
 const API_METHODS: Record<string, string> = {
   "/api/analyze": "POST",
-  "/api/download": "GET",
+  "/api/download": "POST",
   "/api/download-zip": "POST",
   "/api/extract/deep": "POST",
 };
@@ -54,6 +17,12 @@ export async function proxy(request: NextRequest) {
 
   // Only apply to API routes
   if (!pathname.startsWith("/api/")) {
+    return NextResponse.next();
+  }
+
+  // Auth callbacks and provider webhooks manage their own methods and must not
+  // be dropped by the per-IP limiter (would break login / lose webhook events).
+  if (pathname.startsWith("/api/auth/") || pathname.startsWith("/api/webhooks/")) {
     return NextResponse.next();
   }
 
@@ -70,7 +39,7 @@ export async function proxy(request: NextRequest) {
   const ip =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
 
-  const { limited, remaining, resetAt } = isRateLimited(ip);
+  const { limited, remaining, resetAt } = await checkRateLimit(ip);
 
   if (limited) {
     return NextResponse.json(
@@ -79,7 +48,7 @@ export async function proxy(request: NextRequest) {
         status: 429,
         headers: {
           "Retry-After": String(Math.ceil((resetAt - Date.now()) / 1000)),
-          "X-RateLimit-Limit": String(MAX_REQUESTS),
+          "X-RateLimit-Limit": String(RATE_LIMIT.MAX_REQUESTS),
           "X-RateLimit-Remaining": "0",
         },
       },
@@ -89,7 +58,7 @@ export async function proxy(request: NextRequest) {
   const response = NextResponse.next();
 
   // Rate limit headers
-  response.headers.set("X-RateLimit-Limit", String(MAX_REQUESTS));
+  response.headers.set("X-RateLimit-Limit", String(RATE_LIMIT.MAX_REQUESTS));
   response.headers.set("X-RateLimit-Remaining", String(remaining));
 
   return response;

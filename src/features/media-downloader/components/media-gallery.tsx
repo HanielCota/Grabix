@@ -1,7 +1,8 @@
 "use client";
 
-import { CheckSquare, Download, Image as ImageIcon, Package, Square, Video, X } from "lucide-react";
+import { CheckSquare, Crown, Download, Image as ImageIcon, Package, Square, Video, X } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { startCheckout } from "@/lib/billing/checkout";
 import type { AnalyzePageResult, MediaAsset } from "../domain/types";
 import { MediaCard } from "./media-card";
 import { type FilterType, MediaFilters } from "./media-filters";
@@ -257,6 +258,24 @@ export function MediaGallery({ result }: MediaGalleryProps) {
           />
         </div>
       </div>
+
+      {/* Locked-by-plan upgrade hint */}
+      {result.lockedCount && result.lockedCount > 0 ? (
+        <div className="flex flex-col gap-3 rounded-xl border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm font-medium text-[var(--g-ink)]">
+            <span className="font-bold">+{result.lockedCount}</span> mídia{result.lockedCount !== 1 ? "s" : ""} além do
+            limite do plano grátis. Assine o Pro para liberar todas.
+          </p>
+          <button
+            type="button"
+            onClick={() => startCheckout().catch(() => {})}
+            className="btn-primary inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl px-4 text-xs font-bold"
+          >
+            <Crown className="h-3.5 w-3.5" />
+            Assinar Pro
+          </button>
+        </div>
+      ) : null}
 
       {/* ZIP feedback */}
       {zipMsg && (

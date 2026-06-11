@@ -1,8 +1,11 @@
 import type { NextRequest } from "next/server";
+import { Errors } from "@/features/media-downloader/domain/errors";
 import { runDeepCrawl } from "@/lib/crawl/orchestrator";
 import { deepCrawlRequestSchema } from "@/lib/crawl/schemas";
 import type { SSEEventMap, SSEEventName } from "@/lib/crawl/types";
 import { handleApiError } from "@/server/api-utils";
+import { requireUser } from "@/server/auth-guard";
+import { getUserPlan } from "@/server/entitlements";
 import { validateDnsResolution, validateUrlFormat } from "@/server/security";
 
 export async function POST(request: NextRequest) {
@@ -19,6 +22,12 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const user = await requireUser();
+    const plan = await getUserPlan(user.id);
+    if (!plan.features.deepCrawl) {
+      throw Errors.upgradeRequired("A busca profunda é exclusiva do plano Pro.");
+    }
+
     const normalizedUrl = await validateUrlFormat(parsed.data.url);
     await validateDnsResolution(normalizedUrl.hostname);
 

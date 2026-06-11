@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { CrawlProgress } from "@/components/crawl-progress";
 import { CrawlResults } from "@/components/crawl-results";
 import { useDeepCrawl } from "@/hooks/use-deep-crawl";
+import { startCheckout } from "@/lib/billing/checkout";
 import type { CrawlConfig } from "@/lib/crawl/types";
 import type { AnalyzePageResult } from "../domain/types";
 import { analyzePageResultSchema } from "../domain/types";
@@ -18,7 +19,7 @@ type PartialCrawlConfig = Pick<CrawlConfig, "maxDepth" | "maxPages" | "followExt
 type ViewState =
   | { status: "idle" }
   | { status: "loading"; url: string }
-  | { status: "error"; message: string; url?: string; canRetryDeep?: boolean }
+  | { status: "error"; message: string; url?: string; canRetryDeep?: boolean; upgrade?: boolean }
   | { status: "empty"; message: string; url: string; canRetryDeep?: boolean }
   | { status: "success"; result: AnalyzePageResult }
   | { status: "deep_crawling"; url: string }
@@ -45,6 +46,12 @@ export function MediaDownloader() {
   const resultsRef = useRef<HTMLDivElement | null>(null);
 
   const deepCrawl = useDeepCrawl();
+
+  const handleUpgrade = useCallback(() => {
+    startCheckout().catch((err) => {
+      setState({ status: "error", message: err instanceof Error ? err.message : "Erro ao iniciar a assinatura." });
+    });
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -109,6 +116,19 @@ export function MediaDownloader() {
             status: "error",
             message: "Muitas requisições. Aguarde alguns segundos e tente novamente.",
             url,
+          });
+          return;
+        }
+        if (response.status === 401) {
+          setState({ status: "error", message: "Sua sessão expirou. Faça login novamente.", url });
+          return;
+        }
+        if (response.status === 402) {
+          setState({
+            status: "error",
+            message: data.error?.message ?? "Recurso disponível apenas no plano Pro.",
+            url,
+            upgrade: true,
           });
           return;
         }
@@ -309,14 +329,16 @@ export function MediaDownloader() {
                 message={state.message}
                 onDismiss={handleBack}
                 action={
-                  state.canRetryDeep && state.url
-                    ? {
-                        label: "Tentar busca profunda",
-                        onClick: () => {
-                          if (state.url) handleAnalyze(state.url, true);
-                        },
-                      }
-                    : undefined
+                  state.upgrade
+                    ? { label: "Assinar Pro", onClick: handleUpgrade }
+                    : state.canRetryDeep && state.url
+                      ? {
+                          label: "Tentar busca profunda",
+                          onClick: () => {
+                            if (state.url) handleAnalyze(state.url, true);
+                          },
+                        }
+                      : undefined
                 }
               />
             </motion.div>

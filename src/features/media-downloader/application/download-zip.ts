@@ -64,7 +64,11 @@ async function fetchAssetStream(
 
 // ─── ZIP stream ───
 
-export async function createZipStream(assets: MediaAsset[], signal?: AbortSignal): Promise<Readable> {
+export async function createZipStream(
+  assets: MediaAsset[],
+  signal?: AbortSignal,
+  opts?: { maxZipBytes?: number; concurrency?: number },
+): Promise<Readable> {
   if (!assets?.length) {
     throw Errors.downloadFailed("Nenhum arquivo selecionado.");
   }
@@ -75,7 +79,7 @@ export async function createZipStream(assets: MediaAsset[], signal?: AbortSignal
 
   const archive = new ZipArchive({ zlib: { level: 1 } });
   const passThrough = new PassThrough();
-  const maxZipBytes = appConfig.limits.maxZipSizeBytes;
+  const maxZipBytes = opts?.maxZipBytes ?? appConfig.limits.maxZipSizeBytes;
   let totalBytes = 0;
 
   // Forward archive errors to passThrough so the consumer gets notified
@@ -85,7 +89,7 @@ export async function createZipStream(assets: MediaAsset[], signal?: AbortSignal
 
   archive.pipe(passThrough);
 
-  const concurrency = appConfig.limits.maxConcurrentDownloads;
+  const concurrency = opts?.concurrency ?? appConfig.limits.maxConcurrentDownloads;
   const handleAbort = () => {
     archive.abort();
     passThrough.destroy(new Error("CLIENT_ABORTED"));
