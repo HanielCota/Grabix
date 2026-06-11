@@ -3,26 +3,37 @@
 import { useEffect, useState } from "react";
 import { PRICING } from "@/server/plans";
 
-// Shared across all consumers so the price is fetched once. Falls back to the
-// build-time default until /api/pricing (admin-editable) responds.
+// Shared across all consumers so the price is fetched once per TTL window.
+// Falls back to the build-time default until /api/pricing (admin-editable)
+// responds. The cache is intentionally short-lived so an admin price change
+// reflects on the public site without a hard reload (the value is tiny, so
+// re-fetching on navigation/focus is cheap).
+const TTL_MS = 30_000;
 let cached: string | null = null;
+let cachedAt = 0;
 let inflight: Promise<string> | null = null;
 
+function isFresh(): boolean {
+  return cached != null && Date.now() - cachedAt < TTL_MS;
+}
+
 function fetchLabel(): Promise<string> {
-  if (cached) return Promise.resolve(cached);
+  if (isFresh()) return Promise.resolve(cached as string);
   if (!inflight) {
     inflight = fetch("/api/pricing")
       .then((r) => r.json())
       .then((d) => {
         cached = (d?.proPriceLabel as string) || PRICING.proPriceLabel;
+        cachedAt = Date.now();
+        inflight = null;
         return cached;
       })
       .catch(() => {
         // Don't poison the cache with the fallback: clear `inflight` so a later
-        // mount retries the fetch once the network recovers. Until then callers
-        // get the build-time default.
+        // call retries the fetch once the network recovers. Until then callers
+        // get the last good value (or the build-time default).
         inflight = null;
-        return PRICING.proPriceLabel;
+        return cached ?? PRICING.proPriceLabel;
       });
   }
   return inflight;
@@ -32,9 +43,19 @@ export function usePricing() {
   const [proPriceLabel, setLabel] = useState(cached ?? PRICING.proPriceLabel);
   useEffect(() => {
     let active = true;
-    fetchLabel().then((l) => active && setLabel(l));
+    const sync = () => {
+      fetchLabel().then((l) => active && setLabel(l));
+    };
+    sync();
+    // Revalidate when the user returns to the tab so a price edited elsewhere
+    // shows up without a manual reload, even on a long-lived session.
+    const onFocus = () => {
+      if (!isFresh()) sync();
+    };
+    window.addEventListener("focus", onFocus);
     return () => {
       active = false;
+      window.removeEventListener("focus", onFocus);
     };
   }, []);
   return { proPriceLabel };
