@@ -16,9 +16,11 @@ test.describe("landing (signed out)", () => {
   test("surfaces the Pro plan contents up front (no modal needed)", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("heading", { name: /o que vem no grabix pro/i })).toBeVisible();
-    // Key Pro benefits are listed directly on the page.
-    await expect(page.getByText(/downloads diários ilimitados/i)).toBeVisible();
-    await expect(page.getByText(/busca profunda/i)).toBeVisible();
+    // Key Pro benefits are listed directly in the upsell block (the same labels
+    // also appear in the comparison table and FAQ further down, so scope here).
+    const proUpsell = page.getByRole("region", { name: /o que vem no grabix pro/i });
+    await expect(proUpsell.getByText(/downloads diários ilimitados/i)).toBeVisible();
+    await expect(proUpsell.getByText(/busca profunda/i)).toBeVisible();
   });
 
   test("has no serious or critical accessibility violations", async ({ page }) => {

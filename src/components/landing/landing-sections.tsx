@@ -70,7 +70,7 @@ export function LandingSections() {
               key={step.title}
               className="relative rounded-2xl border border-[var(--g-line)] bg-[var(--g-surface-1)] p-6"
             >
-              <span className="absolute right-5 top-5 text-3xl font-extrabold tabular-nums text-[var(--g-surface-3)]">
+              <span className="absolute right-5 top-5 inline-flex h-6 w-6 items-center justify-center rounded-full border border-[var(--g-line-hover)] text-xs font-bold tabular-nums text-[var(--g-sub)]">
                 {i + 1}
               </span>
               <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--g-line-hover)] bg-[var(--g-surface-2)] text-[var(--g-ink)]">
