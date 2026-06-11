@@ -7,10 +7,18 @@ import { expect, test } from "@playwright/test";
 test.describe("landing (signed out)", () => {
   test("shows the hero and the Google sign-in CTA", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "GRABIX" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "GRABIX", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: /continuar com google/i })).toBeVisible();
-    // Free-plan limits are communicated up front.
-    await expect(page.getByText(/itens por análise/i)).toBeVisible();
+    // Free-plan limits are communicated up front (unique to the signed-out card).
+    await expect(page.getByText(/20 downloads por dia/i)).toBeVisible();
+  });
+
+  test("surfaces the Pro plan contents up front (no modal needed)", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByRole("heading", { name: /o que vem no grabix pro/i })).toBeVisible();
+    // Key Pro benefits are listed directly on the page.
+    await expect(page.getByText(/downloads diários ilimitados/i)).toBeVisible();
+    await expect(page.getByText(/busca profunda/i)).toBeVisible();
   });
 
   test("has no serious or critical accessibility violations", async ({ page }) => {
