@@ -74,7 +74,7 @@ export function DeepCrawlToggle({
             <Crown size={10} className="text-[var(--g-gold)]" /> Pro
           </span>
         ) : (
-          <span className={`hidden text-xs sm:inline ${enabled ? "text-[var(--g-sub)]" : "text-[var(--g-muted)]"}`}>
+          <span className={`hidden text-sm sm:inline ${enabled ? "text-[var(--g-sub)]" : "text-[var(--g-muted)]"}`}>
             Segue links para encontrar mais mídias
           </span>
         )}

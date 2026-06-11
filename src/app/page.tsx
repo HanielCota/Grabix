@@ -86,7 +86,7 @@ export default function Home() {
               Continuar com Google
             </button>
 
-            <p className="mx-auto mt-5 max-w-xs border-t border-[var(--g-line)] pt-4 text-xs text-[var(--g-muted)]">
+            <p className="mx-auto mt-5 max-w-sm border-t border-[var(--g-line)] pt-4 text-sm text-[var(--g-muted)]">
               No plano grátis: <span className="font-semibold text-[var(--g-sub)]">10 itens por análise</span> e{" "}
               <span className="font-semibold text-[var(--g-sub)]">20 downloads por dia</span>.
             </p>

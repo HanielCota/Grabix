@@ -134,7 +134,7 @@ export default function ContaPage() {
 
   return (
     <main className="mx-auto max-w-2xl px-5 py-8 sm:px-8">
-      <h1 className="mb-6 text-2xl font-bold tracking-[-0.02em] text-[var(--g-ink)]">Minha conta</h1>
+      <h1 className="mb-6 text-3xl font-bold tracking-[-0.02em] text-[var(--g-ink)]">Minha conta</h1>
 
       {/* ── Profile ── */}
       <section className="flex items-center gap-4 rounded-2xl border border-[var(--g-line)] bg-[var(--g-surface-1)] p-5">
@@ -148,7 +148,7 @@ export default function ContaPage() {
         <div className="min-w-0">
           <p className="truncate text-base font-semibold text-[var(--g-ink)]">{user.name ?? "-"}</p>
           <p className="truncate text-sm text-[var(--g-muted)]">{user.email}</p>
-          <p className="mt-0.5 text-xs text-[var(--g-muted)]">Perfil gerenciado pela sua conta Google.</p>
+          <p className="mt-0.5 text-sm text-[var(--g-muted)]">Perfil gerenciado pela sua conta Google.</p>
         </div>
       </section>
 
@@ -205,7 +205,7 @@ export default function ContaPage() {
             {/* Pro com data: contagem regressiva */}
             {isPro && countdown && (
               <div className="mt-5">
-                <div className="mb-1.5 flex items-center justify-between text-xs">
+                <div className="mb-1.5 flex items-center justify-between text-sm">
                   <span className="font-semibold text-[var(--g-ink)]">
                     {countdown.days === 1 ? "Falta 1 dia" : `Faltam ${countdown.days} dias`}
                   </span>
@@ -233,14 +233,14 @@ export default function ContaPage() {
                 <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)] px-2.5 py-1 text-xs font-bold text-[var(--g-ink)]">
                   <InfinityIcon className="h-3.5 w-3.5 text-[var(--g-gold)]" /> Acesso vitalício
                 </span>
-                <span className="text-xs text-[var(--g-muted)]">sem expiração</span>
+                <span className="text-sm text-[var(--g-muted)]">sem expiração</span>
               </div>
             )}
 
             {/* Free: consumo da quota diária + horário de renovação */}
             {hasFreeQuota && (
               <div className="mt-5">
-                <div className="mb-1.5 flex items-center justify-between text-xs">
+                <div className="mb-1.5 flex items-center justify-between text-sm">
                   <span className="font-semibold text-[var(--g-ink)]">
                     {usage?.used} de {usage?.limit} downloads hoje
                   </span>
@@ -269,7 +269,7 @@ export default function ContaPage() {
       <section className="mt-4 flex items-center justify-between rounded-2xl border border-[var(--g-line)] bg-[var(--g-surface-1)] p-5">
         <div>
           <p className="text-sm font-semibold text-[var(--g-ink)]">Sessão</p>
-          <p className="text-xs text-[var(--g-muted)]">Sair desta conta neste dispositivo.</p>
+          <p className="text-sm text-[var(--g-muted)]">Sair desta conta neste dispositivo.</p>
         </div>
         <button
           type="button"
@@ -322,7 +322,7 @@ export default function ContaPage() {
               </div>
             )}
 
-            {error && <p className="mt-2 text-xs font-medium text-[var(--g-danger)]">{error}</p>}
+            {error && <p className="mt-2 text-sm font-medium text-[var(--g-danger)]">{error}</p>}
           </div>
         </div>
       </section>
