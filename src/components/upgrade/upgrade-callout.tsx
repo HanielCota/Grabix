@@ -35,7 +35,7 @@ export function UpgradeCallout({ title = "Recurso do plano Pro", message, onUpgr
             onClick={onUpgrade}
             className="btn-primary mt-3 inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold"
           >
-            <Crown size={15} />
+            <Crown size={15} className="text-[var(--g-gold)]" />
             Assinar Pro · {proPriceLabel}
           </button>
         </div>
