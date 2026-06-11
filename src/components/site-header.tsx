@@ -1,8 +1,9 @@
 "use client";
 
-import { Crown, Grab, LayoutDashboard, LogOut } from "lucide-react";
+import { Crown, Grab, LayoutDashboard } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
+import { AccountMenu } from "@/components/account-menu";
 import { useUpgrade } from "@/components/upgrade/upgrade-context";
 import { useMe } from "@/hooks/use-me";
 import { usePricing } from "@/hooks/use-pricing";
@@ -84,14 +85,7 @@ export function SiteHeader() {
                   </span>
                 </button>
               )}
-              <button
-                type="button"
-                onClick={() => signOut()}
-                aria-label="Sair"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--g-line-hover)] bg-[var(--g-surface-3)] text-[var(--g-sub)] transition-all hover:bg-[var(--g-line)] hover:text-[var(--g-ink)]"
-              >
-                <LogOut className="h-4 w-4" />
-              </button>
+              <AccountMenu />
             </>
           )}
 
