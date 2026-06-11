@@ -43,6 +43,8 @@ export const analyzePageResultSchema = z.object({
   totalFound: z.number().int().nonnegative(),
   assets: z.array(mediaAssetSchema),
   pagesScanned: z.number().int().positive().optional(),
+  /** Assets hidden by the current plan's limits (free tier). Drives the upgrade hint. */
+  lockedCount: z.number().int().nonnegative().optional(),
 });
 export type AnalyzePageResult = z.infer<typeof analyzePageResultSchema>;
 

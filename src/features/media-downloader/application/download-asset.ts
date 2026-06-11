@@ -11,6 +11,7 @@ import {
 export async function downloadAsset(
   rawUrl: string,
   signal?: AbortSignal,
+  maxBytes: number = appConfig.limits.maxFileSizeBytes,
 ): Promise<{
   stream: ReadableStream<Uint8Array>;
   contentType: string;
@@ -60,7 +61,7 @@ export async function downloadAsset(
   const contentLengthRaw = response.headers.get("content-length");
   const contentLength = contentLengthRaw ? parseInt(contentLengthRaw, 10) : null;
 
-  if (contentLength != null && contentLength > appConfig.limits.maxFileSizeBytes) {
+  if (contentLength != null && contentLength > maxBytes) {
     throw Errors.fileTooLarge();
   }
 
@@ -80,7 +81,6 @@ export async function downloadAsset(
   }
 
   // Wrap stream with size limit
-  const maxBytes = appConfig.limits.maxFileSizeBytes;
   let bytesRead = 0;
   const limitedStream = body.pipeThrough(
     new TransformStream<Uint8Array, Uint8Array>({

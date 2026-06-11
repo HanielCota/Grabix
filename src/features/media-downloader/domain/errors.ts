@@ -40,4 +40,12 @@ export const Errors = {
   downloadFailed: (reason: string) => new AppError(`Erro no download: ${reason}`, "DOWNLOAD_FAILED", 502),
 
   invalidMediaType: () => new AppError("Tipo de mídia inválido.", "INVALID_MEDIA_TYPE"),
+
+  unauthorized: () => new AppError("Faça login para continuar.", "UNAUTHORIZED", 401),
+
+  upgradeRequired: (detail?: string) =>
+    new AppError(detail ?? "Recurso disponível apenas no plano Pro.", "UPGRADE_REQUIRED", 402),
+
+  quotaExceeded: () =>
+    new AppError("Limite diário do plano gratuito atingido. Faça upgrade para continuar.", "QUOTA_EXCEEDED", 402),
 } as const;

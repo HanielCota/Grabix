@@ -1,11 +1,17 @@
 import type { NextRequest } from "next/server";
 import { downloadAsset } from "@/features/media-downloader/application/download-asset";
+import { Errors } from "@/features/media-downloader/domain/errors";
 import { downloadAssetInputSchema } from "@/features/media-downloader/domain/types";
 import { buildContentDisposition } from "@/lib/files/file-name";
 import { handleApiError } from "@/server/api-utils";
+import { requireUser } from "@/server/auth-guard";
+import { consumeDownloadQuota, getUserPlan } from "@/server/entitlements";
 
 export async function GET(request: NextRequest) {
   try {
+    const user = await requireUser();
+    const plan = await getUserPlan(user.id);
+
     const params = request.nextUrl.searchParams;
     const parsedInput = downloadAssetInputSchema.safeParse({
       url: params.get("url") ?? "",
@@ -15,8 +21,13 @@ export async function GET(request: NextRequest) {
       return await handleApiError(parsedInput.error);
     }
 
+    const quota = await consumeDownloadQuota(user.id, plan);
+    if (!quota.ok) {
+      throw Errors.quotaExceeded();
+    }
+
     const input = parsedInput.data;
-    const result = await downloadAsset(input.url, request.signal);
+    const result = await downloadAsset(input.url, request.signal, plan.limits.maxFileSizeBytes);
     const finalName = result.fileName ?? input.fileName;
 
     return new Response(result.stream, {
