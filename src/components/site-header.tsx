@@ -1,6 +1,6 @@
 "use client";
 
-import { Crown, Grab, LayoutDashboard } from "lucide-react";
+import { Crown, Grab, LayoutDashboard, Tag } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
 import { AccountMenu } from "@/components/account-menu";
@@ -63,8 +63,9 @@ export function SiteHeader() {
           {pathname !== "/pricing" && (
             <a
               href="/pricing"
-              className="hidden rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[var(--g-sub)] transition-colors hover:text-[var(--g-ink)] sm:inline-flex"
+              className="hidden items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold text-[var(--g-sub)] transition-colors hover:text-[var(--g-ink)] sm:inline-flex"
             >
+              <Tag className="h-4 w-4" />
               Preços
             </a>
           )}
