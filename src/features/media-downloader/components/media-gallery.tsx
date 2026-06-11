@@ -1,9 +1,8 @@
 "use client";
 
 import { CheckSquare, Crown, Download, Image as ImageIcon, Package, Square, Video, X } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { buildCheckoutUrl } from "@/server/plans";
+import { startCheckout } from "@/lib/billing/checkout";
 import type { AnalyzePageResult, MediaAsset } from "../domain/types";
 import { MediaCard } from "./media-card";
 import { type FilterType, MediaFilters } from "./media-filters";
@@ -21,7 +20,6 @@ export function MediaGallery({ result }: MediaGalleryProps) {
   const [zipMsg, setZipMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const zipAbortRef = useRef<AbortController | null>(null);
-  const { data: session } = useSession();
 
   useEffect(() => {
     return () => {
@@ -268,19 +266,14 @@ export function MediaGallery({ result }: MediaGalleryProps) {
             <span className="font-bold">+{result.lockedCount}</span> mídia{result.lockedCount !== 1 ? "s" : ""} além do
             limite do plano grátis. Assine o Pro para liberar todas.
           </p>
-          {buildCheckoutUrl(session?.user?.email) && (
-            <button
-              type="button"
-              onClick={() => {
-                const url = buildCheckoutUrl(session?.user?.email);
-                if (url) window.location.href = url;
-              }}
-              className="btn-primary inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl px-4 text-xs font-bold"
-            >
-              <Crown className="h-3.5 w-3.5" />
-              Assinar Pro
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => startCheckout().catch(() => {})}
+            className="btn-primary inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl px-4 text-xs font-bold"
+          >
+            <Crown className="h-3.5 w-3.5" />
+            Assinar Pro
+          </button>
         </div>
       ) : null}
 

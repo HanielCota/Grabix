@@ -2,8 +2,9 @@
 
 import { Crown, Grab, LogOut } from "lucide-react";
 import { signIn, signOut, useSession } from "next-auth/react";
+import { useState } from "react";
 import { useMe } from "@/hooks/use-me";
-import { buildCheckoutUrl, PRICING } from "@/server/plans";
+import { startCheckout } from "@/lib/billing/checkout";
 
 function PlanBadge({ plan }: { plan: "free" | "pro" }) {
   if (plan === "pro") {
@@ -21,13 +22,18 @@ function PlanBadge({ plan }: { plan: "free" | "pro" }) {
 }
 
 export function SiteHeader() {
-  const { status, data } = useSession();
+  const { status } = useSession();
   const { me } = useMe();
   const plan = me?.plan ?? "free";
+  const [busy, setBusy] = useState(false);
 
-  function handleUpgrade() {
-    const url = buildCheckoutUrl(data?.user?.email);
-    if (url) window.location.href = url;
+  async function handleUpgrade() {
+    setBusy(true);
+    try {
+      await startCheckout();
+    } catch {
+      setBusy(false);
+    }
   }
 
   return (
@@ -42,14 +48,15 @@ export function SiteHeader() {
           {status === "authenticated" && (
             <>
               <PlanBadge plan={plan} />
-              {plan === "free" && PRICING.checkoutUrl && (
+              {plan === "free" && (
                 <button
                   type="button"
                   onClick={handleUpgrade}
-                  className="btn-primary inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-bold"
+                  disabled={busy}
+                  className="btn-primary inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-bold disabled:opacity-60"
                 >
                   <Crown className="h-3.5 w-3.5" />
-                  Assinar Pro
+                  {busy ? "Abrindo..." : "Assinar Pro"}
                 </button>
               )}
               <button

@@ -58,7 +58,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // Auth callbacks and provider webhooks manage their own methods and must not
-  // be dropped by the per-IP limiter (would break login / lose Hotmart events).
+  // be dropped by the per-IP limiter (would break login / lose webhook events).
   if (pathname.startsWith("/api/auth/") || pathname.startsWith("/api/webhooks/")) {
     return NextResponse.next();
   }

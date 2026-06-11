@@ -28,7 +28,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
     async signIn({ user }) {
-      // Grant any Pro entitlement that arrived (via Hotmart webhook) before
+      // Grant any Pro entitlement that arrived (via billing webhook) before
       // this email had an account. Never block login if the claim fails.
       try {
         if (user?.id && user.email) {

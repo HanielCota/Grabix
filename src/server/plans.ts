@@ -63,24 +63,9 @@ export function isPlanId(value: unknown): value is PlanId {
   return value === "free" || value === "pro";
 }
 
-// ─── Pricing / checkout (display + redirect only; billing lives in Hotmart) ───
+// ─── Pricing (display only; billing runs through Mercado Pago) ───
+// The actual checkout is created per-user server-side via /api/billing/subscribe.
 
 export const PRICING = {
   proPriceLabel: process.env.NEXT_PUBLIC_PRO_PRICE_LABEL ?? "R$ 19,90/mês",
-  checkoutUrl: process.env.NEXT_PUBLIC_HOTMART_CHECKOUT_URL ?? "",
 };
-
-/** Build the Hotmart checkout URL, pre-filling the buyer email when known. */
-export function buildCheckoutUrl(email?: string | null): string {
-  const base = PRICING.checkoutUrl;
-  if (!base) return "";
-  if (!email) return base;
-  try {
-    const u = new URL(base);
-    // Hotmart checkout pre-fill param
-    u.searchParams.set("email", email);
-    return u.toString();
-  } catch {
-    return base;
-  }
-}

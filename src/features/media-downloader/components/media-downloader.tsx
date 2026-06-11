@@ -2,13 +2,12 @@
 
 import { ArrowLeft, CheckCircle2, Loader2, ScanSearch } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CrawlProgress } from "@/components/crawl-progress";
 import { CrawlResults } from "@/components/crawl-results";
 import { useDeepCrawl } from "@/hooks/use-deep-crawl";
+import { startCheckout } from "@/lib/billing/checkout";
 import type { CrawlConfig } from "@/lib/crawl/types";
-import { buildCheckoutUrl } from "@/server/plans";
 import type { AnalyzePageResult } from "../domain/types";
 import { analyzePageResultSchema } from "../domain/types";
 import { ErrorMessage } from "./error-message";
@@ -47,12 +46,12 @@ export function MediaDownloader() {
   const resultsRef = useRef<HTMLDivElement | null>(null);
 
   const deepCrawl = useDeepCrawl();
-  const { data: session } = useSession();
 
   const handleUpgrade = useCallback(() => {
-    const url = buildCheckoutUrl(session?.user?.email);
-    if (url) window.location.href = url;
-  }, [session?.user?.email]);
+    startCheckout().catch((err) => {
+      setState({ status: "error", message: err instanceof Error ? err.message : "Erro ao iniciar a assinatura." });
+    });
+  }, []);
 
   useEffect(() => {
     return () => {

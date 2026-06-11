@@ -1,7 +1,7 @@
 # Grabix — Setup de Planos (Free / Pro)
 
 O Grabix agora exige **login** e tem dois planos: **Free** e **Pro** (assinatura
-mensal via Hotmart). Este guia cobre o que provisionar para rodar.
+mensal via Mercado Pago). Este guia cobre o que provisionar para rodar.
 
 ## Visão geral
 
@@ -41,30 +41,38 @@ AUTH_GOOGLE_SECRET="..."
 # Em produção (fora da Vercel): AUTH_URL="https://grabix.app"
 ```
 
-## 3. Hotmart (cobrança)
+## 3. Mercado Pago (cobrança)
 
-1. Crie o produto/assinatura **mensal** no Hotmart e pegue a URL pública de checkout.
-2. Em **Ferramentas → Webhook (Postback)**, aponte para:
-   `https://SEU_DOMINIO/api/webhooks/hotmart` e copie o **Hottok**.
+A assinatura é criada **por usuário via API** (não há link estático). O botão
+"Assinar Pro" chama `/api/billing/subscribe`, que cria um *preapproval* mensal
+com `external_reference = userId` e redireciona o usuário para o checkout do MP.
+
+1. No painel do Mercado Pago → **Suas integrações** → crie uma aplicação e copie
+   o **Access Token** (use o de **teste** em dev).
+2. Em **Webhooks**, registre a URL `https://SEU_DOMINIO/api/webhooks/mercadopago`,
+   assine os tópicos **`subscription_preapproval`** e
+   **`subscription_authorized_payment`**, e copie a **Secret key** (assinatura).
 3. Configure:
 
 ```bash
-HOTMART_HOTTOK="seu-hottok"
-NEXT_PUBLIC_HOTMART_CHECKOUT_URL="https://pay.hotmart.com/XXXXXXX"
+MP_ACCESS_TOKEN="APP_USR-... (ou TEST-...)"
+MP_WEBHOOK_SECRET="sua-secret-key"
+MP_PRO_AMOUNT="19.90"
 NEXT_PUBLIC_PRO_PRICE_LABEL="R$ 19,90/mês"
 ```
 
-### Como o webhook funciona
+### Como funciona
 
-- Valida o header `X-HOTMART-HOTTOK` (rejeita o resto).
-- É **idempotente** (ignora eventos repetidos pelo `id`).
-- Casa o pagamento ao usuário **pelo e-mail**. Eventos `PURCHASE_APPROVED` /
-  `PURCHASE_COMPLETE` liberam o Pro; `REFUNDED` / `CHARGEBACK` / `EXPIRED`
-  revogam; `SUBSCRIPTION_CANCELLATION` mantém acesso até o fim do período pago.
-- ⚠️ **E-mail é o elo.** Se o usuário pagar com e-mail diferente do login, o
-  webhook grava um *entitlement pendente* e o Pro é concedido no próximo login
-  com aquele e-mail. O botão "Assinar Pro" já pré-preenche o e-mail da sessão no
-  checkout para evitar isso.
+- O webhook valida o header **`x-signature`** (HMAC-SHA256 com a `MP_WEBHOOK_SECRET`)
+  e é **idempotente** (dedupe pelo `x-request-id`).
+- Ao receber um evento, **consulta a API do MP** pelo id e lê o `status` e o
+  `external_reference` (= o `userId`). `authorized` libera o Pro; `cancelled`
+  mantém acesso até o fim do período pago; `paused` suspende.
+- ✅ **Casamento robusto por `userId`** (não por e-mail), porque a assinatura é
+  criada já vinculada ao usuário logado. Há fallback por e-mail + *entitlement
+  pendente* caso o `external_reference` não venha.
+- Em teste, pague com uma **conta de comprador de teste** (diferente da conta
+  vendedora) — o MP retorna `sandbox_init_point` com credenciais de teste.
 
 ## 4. Rodar
 
