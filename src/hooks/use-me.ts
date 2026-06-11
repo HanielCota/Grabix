@@ -8,6 +8,8 @@ export interface MeData {
   isAdmin?: boolean;
   /** ISO date the Pro pass is active through (null for free or no expiry). */
   periodEnd?: string | null;
+  /** ISO date the current Pro period began (≈ last payment); sizes the bar. */
+  periodStart?: string | null;
   usage?: { used: number; limit: number | null; remaining: number | null };
 }
 

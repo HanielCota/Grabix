@@ -19,20 +19,26 @@ export async function GET() {
     getTodayUsage(userId),
     isAdmin(userId, session.user.email),
     getDb()
-      .select({ end: subscriptions.currentPeriodEnd })
+      .select({ end: subscriptions.currentPeriodEnd, start: subscriptions.updatedAt })
       .from(subscriptions)
       .where(eq(subscriptions.userId, userId))
       .limit(1),
   ]);
   const limit = plan.quota.downloadsPerDay;
   const finite = Number.isFinite(limit);
-  const periodEnd = plan.id === "pro" ? (subRows[0]?.end?.toISOString() ?? null) : null;
+  const isPro = plan.id === "pro";
+  const periodEnd = isPro ? (subRows[0]?.end?.toISOString() ?? null) : null;
+  // Start of the current paid period ≈ when the subscription row was last
+  // written by a payment webhook; lets the client size the countdown bar to the
+  // real cycle length instead of assuming a fixed 31-day pass.
+  const periodStart = isPro ? (subRows[0]?.start?.toISOString() ?? null) : null;
 
   return NextResponse.json({
     authenticated: true,
     plan: plan.id,
     isAdmin: admin,
     periodEnd,
+    periodStart,
     usage: {
       used,
       limit: finite ? limit : null,

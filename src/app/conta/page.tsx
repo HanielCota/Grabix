@@ -1,6 +1,6 @@
 "use client";
 
-import { Crown, Loader2, LogOut, TriangleAlert } from "lucide-react";
+import { Crown, Infinity as InfinityIcon, Loader2, LogOut, TriangleAlert } from "lucide-react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 import { GoogleIcon } from "@/components/icons/google-icon";
@@ -19,25 +19,43 @@ function formatDate(iso?: string | null): string | null {
 
 const DAY_MS = 86_400_000;
 // One-time Pro pass length (mirrors PRO_PASS_DURATION_MS on the server) — used as
-// the bar's full span since we don't store the purchase date.
+// the bar's full span only when we can't derive the real one from the period.
 const PASS_MS = 31 * DAY_MS;
 
-function proCountdown(periodEnd?: string | null): { days: number; pct: number } | null {
+function proCountdown(periodEnd?: string | null, periodStart?: string | null): { days: number; pct: number } | null {
   if (!periodEnd) return null;
   const end = new Date(periodEnd).getTime();
   if (Number.isNaN(end)) return null;
   const remaining = end - Date.now();
   if (remaining <= 0) return null;
+  // Prefer the real pass span (end − start) so recurring cycles of any length
+  // fill the bar accurately; fall back to the standard one-month pass otherwise.
+  const start = periodStart ? new Date(periodStart).getTime() : Number.NaN;
+  const span = !Number.isNaN(start) && end > start ? end - start : PASS_MS;
   return {
     days: Math.ceil(remaining / DAY_MS),
     // Keep a sliver visible while active; fraction of the pass still remaining.
-    pct: Math.max(2, Math.min(100, (remaining / PASS_MS) * 100)),
+    pct: Math.max(2, Math.min(100, (remaining / span) * 100)),
   };
+}
+
+// Whole hours until the daily download quota resets (00:00 in Brazil).
+function hoursUntilQuotaReset(): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Sao_Paulo",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date());
+  const h = Number(parts.find((p) => p.type === "hour")?.value ?? "0") % 24;
+  const m = Number(parts.find((p) => p.type === "minute")?.value ?? "0");
+  const minutesLeft = 24 * 60 - (h * 60 + m);
+  return Math.max(1, Math.ceil(minutesLeft / 60));
 }
 
 export default function ContaPage() {
   const { data: session, status } = useSession();
-  const { me } = useMe();
+  const { me, loading: meLoading } = useMe();
   const { open: openUpgrade } = useUpgrade();
   const { proPriceLabel } = usePricing();
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -72,7 +90,7 @@ export default function ContaPage() {
   const plan = me?.plan ?? "free";
   const isPro = plan === "pro";
   const proUntil = formatDate(me?.periodEnd);
-  const countdown = proCountdown(me?.periodEnd);
+  const countdown = proCountdown(me?.periodEnd, me?.periodStart);
   const barColor = !countdown
     ? "var(--g-gold)"
     : countdown.days <= 2
@@ -80,6 +98,21 @@ export default function ContaPage() {
       : countdown.days <= 5
         ? "#f59e0b"
         : "var(--g-gold)";
+
+  // Free daily-download quota, shown as a consumption bar (calm → amber → red).
+  const usage = me?.usage;
+  const hasFreeQuota = !isPro && usage?.limit != null && usage.limit > 0;
+  const usedPct = hasFreeQuota ? Math.min(100, Math.round(((usage?.used ?? 0) / (usage?.limit || 1)) * 100)) : 0;
+  const remaining = usage?.remaining ?? null;
+  const quotaColor =
+    remaining != null && remaining <= 0
+      ? "var(--g-danger)"
+      : remaining != null && remaining <= 1
+        ? "#f59e0b"
+        : "var(--g-success)";
+  // While the plan/usage is still loading, show a skeleton instead of flashing
+  // the Free state at someone who is actually Pro.
+  const planLoading = meLoading && !me;
 
   async function handleDelete() {
     setDeleting(true);
@@ -121,61 +154,114 @@ export default function ContaPage() {
 
       {/* ── Plan & usage ── */}
       <section className="mt-4 rounded-2xl border border-[var(--g-line)] bg-[var(--g-surface-1)] p-5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold uppercase tracking-widest text-[var(--g-sub)]">Plano</span>
-              {isPro ? (
-                <span className="inline-flex items-center gap-1 rounded-md border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)] px-1.5 py-0.5 text-[10px] font-bold uppercase text-[var(--g-ink)]">
-                  <Crown size={10} className="text-[var(--g-gold)]" /> Pro
-                </span>
-              ) : (
-                <span className="inline-flex items-center rounded-md border border-[var(--g-line-hover)] bg-[var(--g-surface-3)] px-1.5 py-0.5 text-[10px] font-bold uppercase text-[var(--g-sub)]">
-                  Free
-                </span>
-              )}
+        {planLoading ? (
+          // Skeleton enquanto plano/uso carrega — evita piscar "Free" para quem é Pro.
+          <div className="animate-pulse">
+            <div className="flex items-center justify-between gap-4">
+              <div className="space-y-2">
+                <div className="h-3 w-28 rounded bg-[var(--g-surface-3)]" />
+                <div className="h-4 w-48 rounded bg-[var(--g-surface-3)]" />
+              </div>
+              <div className="h-10 w-32 rounded-xl bg-[var(--g-surface-3)]" />
             </div>
-            <p className="mt-1 text-sm text-[var(--g-sub)]">
-              {isPro
-                ? "Seu acesso Pro está ativo."
-                : me?.usage?.limit != null
-                  ? `${me.usage.used} de ${me.usage.limit} downloads usados hoje.`
-                  : "Plano grátis."}
-            </p>
+            <div className="mt-5 h-2 w-full rounded-full bg-[var(--g-surface-3)]" />
           </div>
-          <button
-            type="button"
-            onClick={openUpgrade}
-            className="btn-primary inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold"
-          >
-            <Crown className="h-4 w-4" />
-            {isPro ? "Renovar Pro" : `Assinar Pro · ${proPriceLabel}`}
-          </button>
-        </div>
+        ) : (
+          <>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-widest text-[var(--g-sub)]">Plano</span>
+                  {isPro ? (
+                    <span className="inline-flex items-center gap-1 rounded-md border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)] px-1.5 py-0.5 text-[10px] font-bold uppercase text-[var(--g-ink)]">
+                      <Crown size={10} className="text-[var(--g-gold)]" /> Pro
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center rounded-md border border-[var(--g-line-hover)] bg-[var(--g-surface-3)] px-1.5 py-0.5 text-[10px] font-bold uppercase text-[var(--g-sub)]">
+                      Free
+                    </span>
+                  )}
+                </div>
+                <p className="mt-1 text-sm text-[var(--g-sub)]">
+                  {isPro
+                    ? "Seu acesso Pro está ativo."
+                    : hasFreeQuota
+                      ? remaining != null && remaining <= 0
+                        ? "Você usou todos os downloads de hoje."
+                        : `Você ainda tem ${remaining} ${remaining === 1 ? "download" : "downloads"} hoje.`
+                      : "Plano grátis."}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => openUpgrade()}
+                className="btn-primary inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold"
+              >
+                <Crown className="h-4 w-4 text-[var(--g-gold)]" />
+                {isPro ? "Renovar Pro" : `Assinar Pro · ${proPriceLabel}`}
+              </button>
+            </div>
 
-        {/* Tempo restante do passe Pro */}
-        {isPro && countdown && (
-          <div className="mt-5">
-            <div className="mb-1.5 flex items-center justify-between text-xs">
-              <span className="font-semibold text-[var(--g-ink)]">
-                {countdown.days === 1 ? "Falta 1 dia" : `Faltam ${countdown.days} dias`}
-              </span>
-              {proUntil && <span className="text-[var(--g-muted)]">até {proUntil}</span>}
-            </div>
-            <div
-              className="h-2 w-full overflow-hidden rounded-full bg-[var(--g-surface-3)]"
-              role="progressbar"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.round(countdown.pct)}
-              aria-label="Tempo restante do plano Pro"
-            >
-              <div
-                className="h-full rounded-full transition-all duration-500"
-                style={{ width: `${countdown.pct}%`, background: barColor }}
-              />
-            </div>
-          </div>
+            {/* Pro com data: contagem regressiva */}
+            {isPro && countdown && (
+              <div className="mt-5">
+                <div className="mb-1.5 flex items-center justify-between text-xs">
+                  <span className="font-semibold text-[var(--g-ink)]">
+                    {countdown.days === 1 ? "Falta 1 dia" : `Faltam ${countdown.days} dias`}
+                  </span>
+                  {proUntil && <span className="text-[var(--g-muted)]">até {proUntil}</span>}
+                </div>
+                <div
+                  className="h-2 w-full overflow-hidden rounded-full bg-[var(--g-surface-3)]"
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round(countdown.pct)}
+                  aria-label="Tempo restante do plano Pro"
+                >
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{ width: `${countdown.pct}%`, background: barColor }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Pro sem data (acesso concedido): selo vitalício, sem contagem falsa */}
+            {isPro && !countdown && (
+              <div className="mt-5 flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)] px-2.5 py-1 text-xs font-bold text-[var(--g-ink)]">
+                  <InfinityIcon className="h-3.5 w-3.5 text-[var(--g-gold)]" /> Acesso vitalício
+                </span>
+                <span className="text-xs text-[var(--g-muted)]">sem expiração</span>
+              </div>
+            )}
+
+            {/* Free: consumo da quota diária + horário de renovação */}
+            {hasFreeQuota && (
+              <div className="mt-5">
+                <div className="mb-1.5 flex items-center justify-between text-xs">
+                  <span className="font-semibold text-[var(--g-ink)]">
+                    {usage?.used} de {usage?.limit} downloads hoje
+                  </span>
+                  <span className="text-[var(--g-muted)]">renova em ~{hoursUntilQuotaReset()}h</span>
+                </div>
+                <div
+                  className="h-2 w-full overflow-hidden rounded-full bg-[var(--g-surface-3)]"
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={usedPct}
+                  aria-label="Downloads usados hoje"
+                >
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{ width: `${Math.max(2, usedPct)}%`, background: quotaColor }}
+                  />
+                </div>
+              </div>
+            )}
+          </>
         )}
       </section>
 
