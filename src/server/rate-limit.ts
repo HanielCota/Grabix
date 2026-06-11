@@ -34,61 +34,72 @@ interface Bucket {
 const buckets = new Map<string, Bucket>();
 let lastCleanup = Date.now();
 
-function memCheck(ip: string, now: number): RateResult {
+function memCheck(key: string, now: number, max: number, windowMs: number): RateResult {
   if (now - lastCleanup >= CLEANUP_INTERVAL) {
     lastCleanup = now;
-    for (const [key, b] of buckets) {
-      if (now > b.resetAt) buckets.delete(key);
+    for (const [k, b] of buckets) {
+      if (now > b.resetAt) buckets.delete(k);
     }
   }
 
-  const bucket = buckets.get(ip);
+  const bucket = buckets.get(key);
   if (!bucket || now > bucket.resetAt) {
-    const resetAt = now + WINDOW_MS;
-    buckets.set(ip, { count: 1, resetAt });
-    return { limited: false, remaining: MAX_REQUESTS - 1, resetAt };
+    const resetAt = now + windowMs;
+    buckets.set(key, { count: 1, resetAt });
+    return { limited: false, remaining: max - 1, resetAt };
   }
 
   bucket.count++;
   return {
-    limited: bucket.count > MAX_REQUESTS,
-    remaining: Math.max(0, MAX_REQUESTS - bucket.count),
+    limited: bucket.count > max,
+    remaining: Math.max(0, max - bucket.count),
     resetAt: bucket.resetAt,
   };
 }
 
 // ─── Distributed (Upstash) ───
 
-async function redisCheck(ip: string, now: number): Promise<RateResult> {
-  const windowStart = Math.floor(now / WINDOW_MS) * WINDOW_MS;
-  const resetAt = windowStart + WINDOW_MS;
-  const key = `rl:${ip}:${windowStart}`;
+async function redisCheck(id: string, now: number, max: number, windowMs: number): Promise<RateResult> {
+  const windowStart = Math.floor(now / windowMs) * windowMs;
+  const resetAt = windowStart + windowMs;
+  const key = `rl:${id}:${windowStart}`;
 
   // biome-ignore lint/style/noNonNullAssertion: only called when redis is set
   const count = await redis!.incr(key);
   if (count === 1) {
     // biome-ignore lint/style/noNonNullAssertion: only called when redis is set
-    await redis!.expire(key, Math.ceil(WINDOW_MS / 1000));
+    await redis!.expire(key, Math.ceil(windowMs / 1000));
   }
 
   return {
-    limited: count > MAX_REQUESTS,
-    remaining: Math.max(0, MAX_REQUESTS - count),
+    limited: count > max,
+    remaining: Math.max(0, max - count),
     resetAt,
   };
 }
 
-export async function checkRateLimit(ip: string): Promise<RateResult> {
+export interface RateLimitOptions {
+  max?: number;
+  windowMs?: number;
+}
+
+/**
+ * Fixed-window rate limit for an arbitrary key (an IP, or e.g. `analyze:<userId>`).
+ * Defaults to the global per-IP budget; pass opts for a per-route/per-user budget.
+ */
+export async function checkRateLimit(key: string, opts?: RateLimitOptions): Promise<RateResult> {
+  const max = opts?.max ?? MAX_REQUESTS;
+  const windowMs = opts?.windowMs ?? WINDOW_MS;
   const now = Date.now();
   if (redis) {
     try {
-      return await redisCheck(ip, now);
+      return await redisCheck(key, now, max, windowMs);
     } catch {
       // Redis unavailable — degrade to in-memory rather than blocking everyone.
-      return memCheck(ip, now);
+      return memCheck(key, now, max, windowMs);
     }
   }
-  return memCheck(ip, now);
+  return memCheck(key, now, max, windowMs);
 }
 
 export const RATE_LIMIT = { WINDOW_MS, MAX_REQUESTS };

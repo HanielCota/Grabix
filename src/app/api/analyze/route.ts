@@ -5,10 +5,19 @@ import { analyzePageInputSchema, analyzePageResultSchema } from "@/features/medi
 import { handleApiError } from "@/server/api-utils";
 import { requireUser } from "@/server/auth-guard";
 import { getUserPlan } from "@/server/entitlements";
+import { checkRateLimit } from "@/server/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
     const user = await requireUser();
+
+    // Per-user budget on top of the global per-IP limit: each analyze triggers an
+    // outbound fetch, so cap how fast a single account can drive that.
+    const rl = await checkRateLimit(`analyze:${user.id}`, { max: 20, windowMs: 60_000 });
+    if (rl.limited) {
+      throw Errors.rateLimited();
+    }
+
     const plan = await getUserPlan(user.id);
 
     const body = await request.json();

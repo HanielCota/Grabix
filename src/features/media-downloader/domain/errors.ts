@@ -50,4 +50,7 @@ export const Errors = {
 
   quotaExceeded: () =>
     new AppError("Limite diário do plano gratuito atingido. Faça upgrade para continuar.", "QUOTA_EXCEEDED", 402),
+
+  rateLimited: () =>
+    new AppError("Muitas requisições. Aguarde alguns segundos e tente novamente.", "RATE_LIMITED", 429),
 } as const;

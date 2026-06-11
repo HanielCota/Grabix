@@ -80,6 +80,22 @@ export async function getAuthorizedPayment(id: string): Promise<{ preapproval_id
   return (await res.json()) as { preapproval_id?: string; status?: string };
 }
 
+// Reject signatures whose timestamp is too old/new. Defends against replay of a
+// captured webhook (the idempotency table is the primary guard; this is depth).
+// Tunable via env in case Mercado Pago reuses the original `ts` across retries.
+const WEBHOOK_TOLERANCE_MS = (() => {
+  const seconds = Number.parseInt(process.env.MP_WEBHOOK_TOLERANCE_SECONDS ?? "", 10);
+  return Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : 5 * 60_000;
+})();
+
+function isFreshTimestamp(ts: string): boolean {
+  const raw = Number(ts);
+  if (!Number.isFinite(raw) || raw <= 0) return false;
+  // MP may send seconds or milliseconds — normalize to ms.
+  const ms = raw < 1e12 ? raw * 1000 : raw;
+  return Math.abs(Date.now() - ms) <= WEBHOOK_TOLERANCE_MS;
+}
+
 function safeEqualHex(a: string, b: string): boolean {
   try {
     const ba = Buffer.from(a, "hex");
@@ -112,6 +128,7 @@ export function verifyWebhookSignature(opts: {
   const ts = parts.ts;
   const v1 = parts.v1;
   if (!ts || !v1) return false;
+  if (!isFreshTimestamp(ts)) return false;
 
   const manifest = `id:${opts.dataId.toLowerCase()};request-id:${opts.requestId ?? ""};ts:${ts};`;
   const expected = crypto.createHmac("sha256", secret).update(manifest).digest("hex");

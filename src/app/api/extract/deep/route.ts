@@ -6,6 +6,7 @@ import type { SSEEventMap, SSEEventName } from "@/lib/crawl/types";
 import { handleApiError } from "@/server/api-utils";
 import { requireUser } from "@/server/auth-guard";
 import { getUserPlan } from "@/server/entitlements";
+import { checkRateLimit } from "@/server/rate-limit";
 import { validateDnsResolution, validateUrlFormat } from "@/server/security";
 
 export async function POST(request: NextRequest) {
@@ -23,6 +24,13 @@ export async function POST(request: NextRequest) {
 
   try {
     const user = await requireUser();
+
+    // Deep crawl fans out to many pages — tighter per-user budget than analyze.
+    const rl = await checkRateLimit(`deep:${user.id}`, { max: 5, windowMs: 60_000 });
+    if (rl.limited) {
+      throw Errors.rateLimited();
+    }
+
     const plan = await getUserPlan(user.id);
     if (!plan.features.deepCrawl) {
       throw Errors.upgradeRequired("A busca profunda é exclusiva do plano Pro.");
