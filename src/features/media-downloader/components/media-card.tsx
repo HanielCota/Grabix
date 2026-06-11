@@ -3,6 +3,7 @@
 import { Check, Copy, Download, ExternalLink, Image as ImageIcon, Loader2, Video } from "lucide-react";
 import { motion } from "motion/react";
 import { memo, useState } from "react";
+import { notifyUsageChanged } from "@/hooks/use-me";
 import type { MediaAsset } from "../domain/types";
 
 const cardInitial = { opacity: 0, y: 20 };
@@ -19,6 +20,7 @@ interface MediaCardProps {
 export const MediaCard = memo(function MediaCard({ asset, index, selected, onToggle }: MediaCardProps) {
   const [imgError, setImgError] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [downloaded, setDownloaded] = useState(false);
   const [downloadMessage, setDownloadMessage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const isImage = asset.type === "IMAGE";
@@ -57,6 +59,9 @@ export const MediaCard = memo(function MediaCard({ asset, index, selected, onTog
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+      notifyUsageChanged();
+      setDownloaded(true);
+      setTimeout(() => setDownloaded(false), 2000);
     } catch {
       setDownloadMessage("Falha de conexão ao baixar o arquivo.");
     } finally {
@@ -145,6 +150,11 @@ export const MediaCard = memo(function MediaCard({ asset, index, selected, onTog
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Baixando...
+              </>
+            ) : downloaded ? (
+              <>
+                <Check className="h-4 w-4" />
+                Baixado
               </>
             ) : (
               <>

@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CrawlProgress } from "@/components/crawl-progress";
 import { CrawlResults } from "@/components/crawl-results";
+import { UpgradeCallout } from "@/components/upgrade/upgrade-callout";
 import { useUpgrade } from "@/components/upgrade/upgrade-context";
 import { useDeepCrawl } from "@/hooks/use-deep-crawl";
 import type { CrawlConfig } from "@/lib/crawl/types";
@@ -317,23 +318,33 @@ export function MediaDownloader() {
             </motion.div>
           )}
 
+          {/* Upgrade-gated error (Pro feature / quota) */}
+          {state.status === "error" && state.upgrade && (
+            <motion.div key="error-upgrade" {...fadeIn} transition={sectionTransition}>
+              <UpgradeCallout
+                title="Disponível no plano Pro"
+                message={state.message}
+                onUpgrade={handleUpgrade}
+                onDismiss={handleBack}
+              />
+            </motion.div>
+          )}
+
           {/* Standard error */}
-          {state.status === "error" && (
+          {state.status === "error" && !state.upgrade && (
             <motion.div key="error" {...fadeIn} transition={sectionTransition}>
               <ErrorMessage
                 message={state.message}
                 onDismiss={handleBack}
                 action={
-                  state.upgrade
-                    ? { label: "Assinar Pro", onClick: handleUpgrade }
-                    : state.canRetryDeep && state.url
-                      ? {
-                          label: "Tentar busca profunda",
-                          onClick: () => {
-                            if (state.url) handleAnalyze(state.url, true);
-                          },
-                        }
-                      : undefined
+                  state.canRetryDeep && state.url
+                    ? {
+                        label: "Tentar busca profunda",
+                        onClick: () => {
+                          if (state.url) handleAnalyze(state.url, true);
+                        },
+                      }
+                    : undefined
                 }
               />
             </motion.div>

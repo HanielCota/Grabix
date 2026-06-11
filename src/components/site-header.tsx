@@ -21,6 +21,25 @@ function PlanBadge({ plan }: { plan: "free" | "pro" }) {
   );
 }
 
+function UsagePill({ used, limit }: { used: number; limit: number }) {
+  const remaining = Math.max(0, limit - used);
+  const cls =
+    remaining === 0
+      ? "border-[var(--g-danger-border)] bg-[var(--g-danger-bg)] text-[var(--g-danger)]"
+      : remaining <= 5
+        ? "border-amber-500/30 bg-amber-500/10 text-amber-400"
+        : "border-[var(--g-line-hover)] bg-[var(--g-surface-3)] text-[var(--g-sub)]";
+  return (
+    <span
+      title={`${used} de ${limit} downloads usados hoje`}
+      className={`inline-flex items-center rounded-lg border px-2 py-1 text-xs font-semibold tabular-nums ${cls}`}
+    >
+      {used}/{limit}
+      <span className="hidden sm:inline">&nbsp;hoje</span>
+    </span>
+  );
+}
+
 export function SiteHeader() {
   const { status } = useSession();
   const { me } = useMe();
@@ -38,6 +57,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           {status === "authenticated" && (
             <>
+              {plan === "free" && me?.usage?.limit != null && <UsagePill used={me.usage.used} limit={me.usage.limit} />}
               <PlanBadge plan={plan} />
               {plan === "free" && (
                 <button
