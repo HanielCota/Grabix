@@ -60,6 +60,15 @@ export function SiteHeader() {
         </a>
 
         <div className="flex items-center gap-2">
+          {pathname !== "/pricing" && (
+            <a
+              href="/pricing"
+              className="hidden rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[var(--g-sub)] transition-colors hover:text-[var(--g-ink)] sm:inline-flex"
+            >
+              Preços
+            </a>
+          )}
+
           {status === "authenticated" && (
             <>
               {me?.isAdmin && (
