@@ -2,9 +2,9 @@
 
 import { Crown, Grab, LogOut } from "lucide-react";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { useState } from "react";
+import { useUpgrade } from "@/components/upgrade/upgrade-context";
 import { useMe } from "@/hooks/use-me";
-import { startCheckout } from "@/lib/billing/checkout";
+import { PRICING } from "@/server/plans";
 
 function PlanBadge({ plan }: { plan: "free" | "pro" }) {
   if (plan === "pro") {
@@ -25,16 +25,7 @@ export function SiteHeader() {
   const { status } = useSession();
   const { me } = useMe();
   const plan = me?.plan ?? "free";
-  const [busy, setBusy] = useState(false);
-
-  async function handleUpgrade() {
-    setBusy(true);
-    try {
-      await startCheckout();
-    } catch {
-      setBusy(false);
-    }
-  }
+  const { open: openUpgrade } = useUpgrade();
 
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--g-line)] bg-[var(--g-bg)]/80 backdrop-blur">
@@ -51,12 +42,12 @@ export function SiteHeader() {
               {plan === "free" && (
                 <button
                   type="button"
-                  onClick={handleUpgrade}
-                  disabled={busy}
-                  className="btn-primary inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-bold disabled:opacity-60"
+                  onClick={openUpgrade}
+                  className="btn-primary inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-bold"
                 >
                   <Crown className="h-3.5 w-3.5" />
-                  {busy ? "Abrindo..." : "Assinar Pro"}
+                  Assinar Pro
+                  <span className="hidden text-[var(--g-ink)]/70 sm:inline">· {PRICING.proPriceLabel}</span>
                 </button>
               )}
               <button

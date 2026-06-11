@@ -5,8 +5,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CrawlProgress } from "@/components/crawl-progress";
 import { CrawlResults } from "@/components/crawl-results";
+import { useUpgrade } from "@/components/upgrade/upgrade-context";
 import { useDeepCrawl } from "@/hooks/use-deep-crawl";
-import { startCheckout } from "@/lib/billing/checkout";
 import type { CrawlConfig } from "@/lib/crawl/types";
 import type { AnalyzePageResult } from "../domain/types";
 import { analyzePageResultSchema } from "../domain/types";
@@ -46,12 +46,7 @@ export function MediaDownloader() {
   const resultsRef = useRef<HTMLDivElement | null>(null);
 
   const deepCrawl = useDeepCrawl();
-
-  const handleUpgrade = useCallback(() => {
-    startCheckout().catch((err) => {
-      setState({ status: "error", message: err instanceof Error ? err.message : "Erro ao iniciar a assinatura." });
-    });
-  }, []);
+  const { open: handleUpgrade } = useUpgrade();
 
   useEffect(() => {
     return () => {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/components/auth/session-provider";
 import { SiteHeader } from "@/components/site-header";
+import { UpgradeProvider } from "@/components/upgrade/upgrade-context";
 import "./globals.css";
 
 const geist = Geist({
@@ -50,8 +51,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         className="min-h-screen bg-[var(--g-bg)] font-sans text-[var(--g-ink)] antialiased"
       >
         <AuthProvider>
-          <SiteHeader />
-          {children}
+          <UpgradeProvider>
+            <SiteHeader />
+            {children}
+          </UpgradeProvider>
         </AuthProvider>
       </body>
     </html>
