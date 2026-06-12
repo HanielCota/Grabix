@@ -36,7 +36,7 @@ jobs:
         run: npm ci
 
       - name: Restore Next.js cache
-        uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
+        uses: actions/cache@v4
         with:
           path: .next/cache
           key: ${{ runner.os }}-next-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
@@ -97,7 +97,7 @@ jobs:
         run: npm ci
 
       - name: Restore Playwright browsers
-        uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
+        uses: actions/cache@v4
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
@@ -116,7 +116,7 @@ jobs:
 
       - name: Upload Playwright report
         if: failure()
-        uses: actions/upload-artifact@b4b15b8c7c6ac7ea3e3d67a1ffdfee6e4d87b7e1 # v4.4.3
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: test-results/
