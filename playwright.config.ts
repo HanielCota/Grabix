@@ -26,9 +26,9 @@ export default defineConfig({
     { name: "Mobile Chrome", use: { ...devices["Pixel 5"] } },
   ],
   webServer: {
-    command: isCI ? "npm run build && npm run start" : "npm run dev",
+    command: "npm run dev",
     url: baseURL,
     reuseExistingServer: !isCI,
-    timeout: 180_000,
+    timeout: 120_000,
   },
 });
