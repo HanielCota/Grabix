@@ -7,22 +7,28 @@ import { defineConfig, devices } from "@playwright/test";
 
 const PORT = Number(process.env.PORT ?? 3000);
 const baseURL = `http://localhost:${PORT}`;
+const isCI = !!process.env.CI;
 
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  reporter: process.env.CI ? "github" : "list",
+  forbidOnly: isCI,
+  retries: isCI ? 2 : 0,
+  reporter: isCI ? "github" : "list",
   use: {
     baseURL,
     trace: "on-first-retry",
+    testIdAttribute: "data-testid",
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    { name: "webkit", use: { ...devices["Desktop Safari"] } },
+    { name: "Mobile Chrome", use: { ...devices["Pixel 5"] } },
+  ],
   webServer: {
-    command: "npm run dev",
+    command: isCI ? "npm run build && npm run start" : "npm run dev",
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    reuseExistingServer: !isCI,
+    timeout: 180_000,
   },
 });

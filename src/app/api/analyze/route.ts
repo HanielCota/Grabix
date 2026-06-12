@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
   // Captured so the catch block can log failures against the right URL/user.
   let url: string | null = null;
   let userId: string | null = null;
+  let deepCrawl = false;
 
   try {
     const user = await requireUser();
@@ -32,8 +33,9 @@ export async function POST(request: NextRequest) {
       return await handleApiError(parsedInput.error);
     }
 
-    const { url: inputUrl, deepCrawl } = parsedInput.data;
+    const { url: inputUrl, deepCrawl: requestedDeepCrawl } = parsedInput.data;
     url = inputUrl;
+    deepCrawl = requestedDeepCrawl;
     if (deepCrawl && !plan.features.deepCrawl) {
       throw Errors.upgradeRequired("A busca profunda é exclusiva do plano Pro.");
     }
@@ -75,7 +77,7 @@ export async function POST(request: NextRequest) {
     if (url && !request.signal.aborted) {
       const reason = err instanceof AppError ? err.code : "INTERNAL_ERROR";
       const message = err instanceof Error ? err.message : null;
-      await recordUrlFailure({ url, reason, message, deepCrawl: false, userId });
+      await recordUrlFailure({ url, reason, message, deepCrawl, userId });
     }
     return await handleApiError(err);
   }

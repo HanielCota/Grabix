@@ -100,9 +100,9 @@ export async function POST(request: NextRequest) {
   }
 
   // ─── Idempotency ───
-  // Mark the event as processed only AFTER it succeeds. If we recorded it first
-  // and the MP API call then failed, MP's retry would be deduped and the event
-  // lost forever. Reprocessing a duplicate is safe (upsert is idempotent).
+  // We mark the event processed only AFTER the entitlement mutation succeeds.
+  // Reprocessing a duplicate is safe (upsert is idempotent), but marking before
+  // applying would lose the event if the DB mutation failed.
   //
   // When MP omits x-request-id we fall back to a synthetic key. It must include
   // the lifecycle status, because a single preapproval id (data.id) fires for

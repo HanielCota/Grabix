@@ -19,8 +19,9 @@ import {
   X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
 import { mediaAssetSchema } from "@/features/media-downloader/domain/types";
+import { useDownloadZip } from "@/hooks/use-download-zip";
 import type { CrawlResult, MediaContentKind, MediaItem, PageKind, PageResult } from "@/lib/crawl/types";
 import { DeepCrawlMediaCard } from "./deep-crawl-media-card";
 
@@ -67,8 +68,6 @@ function mediaItemToAsset(media: MediaItem) {
 export function CrawlResults({ results }: CrawlResultsProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showEmptyPages, setShowEmptyPages] = useState(false);
-  const [isZipping, setIsZipping] = useState(false);
-  const [zipMsg, setZipMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [availabilityFilter, setAvailabilityFilter] = useState<AvailabilityFilter>("all");
   const [mediaTypeFilter, setMediaTypeFilter] = useState<MediaTypeFilter>("all");
@@ -76,7 +75,6 @@ export function CrawlResults({ results }: CrawlResultsProps) {
   const [contentKindFilter, setContentKindFilter] = useState<string>("all");
   const [pageKindFilter, setPageKindFilter] = useState<string>("all");
   const [confidenceFilter, setConfidenceFilter] = useState<ConfidenceFilter>("all");
-  const zipAbortRef = useRef<AbortController | null>(null);
   const deferredSearchQuery = useDeferredValue(searchQuery);
   // All pages with media start expanded - use index-based keys to handle duplicate URLs
   const [expandedPages, setExpandedPages] = useState<Set<number>>(() => {
@@ -87,11 +85,14 @@ export function CrawlResults({ results }: CrawlResultsProps) {
     return expanded;
   });
 
-  useEffect(() => {
-    return () => {
-      zipAbortRef.current?.abort();
-    };
-  }, []);
+  const host = useMemo(() => {
+    try {
+      return new URL(results.originalUrl).hostname.replace(/^www\./, "");
+    } catch {
+      return "media";
+    }
+  }, [results.originalUrl]);
+  const { isZipping, zipMessage, downloadZip, cancelZip } = useDownloadZip({ host });
 
   const allMedia = useMemo(() => {
     const items: Array<{ pageUrl: string; media: MediaItem }> = [];
@@ -339,58 +340,6 @@ export function CrawlResults({ results }: CrawlResultsProps) {
     return items.map(({ media }) => mediaItemToAsset(media)).filter((asset) => asset !== null);
   }, [filteredDownloadableMedia, selected]);
 
-  const host = useMemo(() => {
-    try {
-      return new URL(results.originalUrl).hostname.replace(/^www\./, "");
-    } catch {
-      return "media";
-    }
-  }, [results.originalUrl]);
-
-  async function handleDownloadZip() {
-    if (!assetsForZip.length) return;
-    const capped = assetsForZip.slice(0, 200);
-    const count = capped.length;
-    const controller = new AbortController();
-    zipAbortRef.current = controller;
-    setIsZipping(true);
-    setZipMsg(
-      assetsForZip.length > 200
-        ? { type: "err", text: "Limite de 200 arquivos por ZIP. Os primeiros 200 serão incluídos." }
-        : null,
-    );
-    try {
-      const res = await fetch("/api/download-zip", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assets: capped }),
-        signal: controller.signal,
-      });
-      if (controller.signal.aborted) return;
-      if (!res.ok) {
-        const data = await res.json();
-        setZipMsg({ type: "err", text: data.error?.message ?? "Erro ao gerar ZIP." });
-        return;
-      }
-      const blob = await res.blob();
-      if (controller.signal.aborted) return;
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = blobUrl;
-      a.download = `grabix-${host}.zip`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-      setZipMsg({ type: "ok", text: `${count} arquivo${count !== 1 ? "s" : ""} no ZIP.` });
-    } catch (err) {
-      if (err instanceof DOMException && err.name === "AbortError") return;
-      setZipMsg({ type: "err", text: "Erro de conexão ao gerar ZIP." });
-    } finally {
-      setIsZipping(false);
-    }
-  }
-
   const zipLabel =
     selected.size > 0
       ? `ZIP (${assetsForZip.length} selecionado${assetsForZip.length !== 1 ? "s" : ""})`
@@ -454,10 +403,7 @@ export function CrawlResults({ results }: CrawlResultsProps) {
             {isZipping ? (
               <button
                 type="button"
-                onClick={() => {
-                  zipAbortRef.current?.abort();
-                  setIsZipping(false);
-                }}
+                onClick={cancelZip}
                 className="inline-flex h-10 items-center gap-2 rounded-xl border border-[var(--g-danger-border)] bg-[var(--g-danger-bg)] px-4 text-xs font-bold text-[var(--g-danger)] transition-all hover:bg-[rgba(248,113,113,0.12)]"
               >
                 <X size={14} />
@@ -466,7 +412,7 @@ export function CrawlResults({ results }: CrawlResultsProps) {
             ) : (
               <button
                 type="button"
-                onClick={handleDownloadZip}
+                onClick={() => downloadZip(assetsForZip)}
                 disabled={assetsForZip.length === 0}
                 className="btn-primary inline-flex h-10 items-center gap-2 rounded-xl px-4 text-xs font-bold"
               >
@@ -535,16 +481,16 @@ export function CrawlResults({ results }: CrawlResultsProps) {
         />
       </div>
 
-      {zipMsg && (
+      {zipMessage && (
         <div
           aria-live="polite"
           className={`rounded-xl px-4 py-3 text-sm font-medium ${
-            zipMsg.type === "ok"
+            zipMessage.type === "ok"
               ? "border border-[var(--g-success-border)] bg-[var(--g-success-bg)] text-[var(--g-success)]"
               : "border border-[var(--g-danger-border)] bg-[var(--g-danger-bg)] text-[var(--g-danger)]"
           }`}
         >
-          {zipMsg.text}
+          {zipMessage.text}
         </div>
       )}
 

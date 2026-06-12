@@ -1,6 +1,7 @@
 "use client";
 
 import { Crown, FileQuestion, Grab, LayoutDashboard, Menu, ScanSearch, Tag, X } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
@@ -119,7 +120,7 @@ function MobileNav({ pathname, freeUsage }: { pathname: string; freeUsage: { use
             {NAV_LINKS.map((link) => {
               const active = isActive(pathname, link.href);
               return (
-                <a
+                <Link
                   key={link.href}
                   href={link.href}
                   role="menuitem"
@@ -133,7 +134,7 @@ function MobileNav({ pathname, freeUsage }: { pathname: string; freeUsage: { use
                 >
                   <link.icon className="h-4 w-4" />
                   {link.label}
-                </a>
+                </Link>
               );
             })}
           </div>
@@ -158,19 +159,19 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-[var(--g-line)] bg-[var(--g-bg)]/80 backdrop-blur">
       <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-5 py-3 sm:px-8">
         {/* ── Brand ── */}
-        <a href="/" className="group inline-flex shrink-0 items-center gap-2.5" aria-label="Grabix - início">
+        <Link href="/" className="group inline-flex shrink-0 items-center gap-2.5" aria-label="Grabix - início">
           <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--g-line-hover)] bg-[var(--g-surface-2)] text-[var(--g-ink)] transition-colors group-hover:border-[var(--g-accent-border)]">
             <Grab className="h-[18px] w-[18px]" strokeWidth={1.75} />
           </span>
           <span className="text-base font-bold tracking-[-0.01em] text-[var(--g-ink)]">Grabix</span>
-        </a>
+        </Link>
 
         {/* ── Desktop nav ── */}
         <nav className="hidden items-center gap-1 sm:flex" aria-label="Principal">
           {NAV_LINKS.map((link) => {
             const active = isActive(pathname, link.href);
             return (
-              <a
+              <Link
                 key={link.href}
                 href={link.href}
                 aria-current={active ? "page" : undefined}
@@ -181,7 +182,7 @@ export function SiteHeader() {
                 }`}
               >
                 {link.label}
-              </a>
+              </Link>
             );
           })}
         </nav>
@@ -193,13 +194,13 @@ export function SiteHeader() {
           {status === "authenticated" && (
             <>
               {me?.isAdmin && (
-                <a
+                <Link
                   href="/admin"
                   title="Painel admin"
                   className="hidden h-9 w-9 items-center justify-center rounded-lg border border-[var(--g-line-hover)] bg-[var(--g-surface-3)] text-[var(--g-sub)] transition-all hover:bg-[var(--g-line)] hover:text-[var(--g-ink)] sm:inline-flex"
                 >
                   <LayoutDashboard className="h-4 w-4" />
-                </a>
+                </Link>
               )}
               {freeUsage && (
                 <span className="hidden sm:inline-flex">

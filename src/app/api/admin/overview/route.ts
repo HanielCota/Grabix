@@ -1,4 +1,4 @@
-import { count, eq, gte, sql } from "drizzle-orm";
+import { and, count, eq, gte, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { handleApiError } from "@/server/api-utils";
 import { requireAdmin } from "@/server/auth-guard";
@@ -18,7 +18,10 @@ export async function GET() {
 
     const [totalUsers, proActive, newUsers, downloads, pricing] = await Promise.all([
       db.select({ c: count() }).from(users),
-      db.select({ c: count() }).from(subscriptions).where(eq(subscriptions.status, "active")),
+      db
+        .select({ c: count() })
+        .from(subscriptions)
+        .where(and(eq(subscriptions.status, "active"), gte(subscriptions.currentPeriodEnd, new Date()))),
       db.select({ c: count() }).from(users).where(gte(users.createdAt, sevenDaysAgo)),
       db
         .select({ total: sql<number>`coalesce(sum(${usageDaily.downloads}), 0)` })

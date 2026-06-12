@@ -4,7 +4,7 @@ import { z } from "zod";
 import { handleApiError } from "@/server/api-utils";
 import { requireAdmin } from "@/server/auth-guard";
 import { getDb } from "@/server/db";
-import { users } from "@/server/db/schema";
+import { adminAuditLog, users } from "@/server/db/schema";
 import { upsertSubscription } from "@/server/entitlements";
 
 const bodySchema = z.object({
@@ -47,6 +47,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         .set({ isAdmin: value === true })
         .where(eq(users.id, id));
     }
+
+    await db.insert(adminAuditLog).values({
+      actorId: caller.id,
+      targetUserId: id,
+      action,
+      payload: JSON.stringify({ value }),
+    });
 
     return NextResponse.json({ ok: true });
   } catch (err) {

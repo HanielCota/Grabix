@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { checkRateLimit, RATE_LIMIT } from "@/server/rate-limit";
+import { checkRateLimit, type RateLimitOptions } from "@/server/rate-limit";
 
 // ─── Allowed methods per route ───
 
@@ -10,7 +10,40 @@ const API_METHODS: Record<string, string> = {
   "/api/extract/deep": "POST",
 };
 
-// ─── Proxy ───
+// ─── Per-route rate limit budgets (on top of the global per-IP budget) ───
+
+const ROUTE_LIMITS: Record<string, RateLimitOptions> = {
+  "/api/analyze": { max: 30, windowMs: 60_000 },
+  "/api/download": { max: 60, windowMs: 60_000 },
+  "/api/download-zip": { max: 20, windowMs: 60_000 },
+  "/api/extract/deep": { max: 10, windowMs: 60_000 },
+};
+
+// ─── Client IP extraction ───
+// In production (e.g. Vercel) the edge rewrites x-real-ip and the client cannot
+// forge it. We never trust the left-most x-forwarded-for because it is spoofable.
+// When x-real-ip is absent we fall back to the right-most x-forwarded-for entry
+// (the last proxy that appended the real client IP).
+
+function getClientIp(request: NextRequest): string {
+  const realIp = request.headers.get("x-real-ip")?.trim();
+  if (realIp) return realIp;
+
+  const forwardedFor = request.headers.get("x-forwarded-for")?.trim();
+  if (forwardedFor) {
+    const parts = forwardedFor.split(",");
+    const last = parts[parts.length - 1]?.trim();
+    if (last) return last;
+  }
+
+  // NextRequest exposes the connection IP on some runtimes (Node/Vercel).
+  const connIp = (request as unknown as { ip?: string }).ip;
+  if (connIp) return connIp;
+
+  return "unknown";
+}
+
+// ─── Proxy (Next.js 16 middleware convention) ───
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -35,16 +68,10 @@ export async function proxy(request: NextRequest) {
     );
   }
 
-  // Rate limiting. Prefer the platform-set x-real-ip (the trusted edge writes it
-  // and the client can't forge it); fall back to the left-most x-forwarded-for
-  // only when x-real-ip is absent. Using the left-most XFF alone is spoofable
-  // behind a proxy that appends the real client IP.
-  const ip =
-    request.headers.get("x-real-ip")?.trim() ||
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    "unknown";
-
-  const { limited, remaining, resetAt } = await checkRateLimit(ip);
+  const ip = getClientIp(request);
+  const routeLimits = ROUTE_LIMITS[pathname];
+  const opts: RateLimitOptions = routeLimits ?? { max: 60, windowMs: 60_000 };
+  const { limited, remaining, resetAt, limit } = await checkRateLimit(`ip:${ip}:${pathname}`, opts);
 
   if (limited) {
     return NextResponse.json(
@@ -53,7 +80,7 @@ export async function proxy(request: NextRequest) {
         status: 429,
         headers: {
           "Retry-After": String(Math.ceil((resetAt - Date.now()) / 1000)),
-          "X-RateLimit-Limit": String(RATE_LIMIT.MAX_REQUESTS),
+          "X-RateLimit-Limit": String(limit),
           "X-RateLimit-Remaining": "0",
         },
       },
@@ -63,7 +90,7 @@ export async function proxy(request: NextRequest) {
   const response = NextResponse.next();
 
   // Rate limit headers
-  response.headers.set("X-RateLimit-Limit", String(RATE_LIMIT.MAX_REQUESTS));
+  response.headers.set("X-RateLimit-Limit", String(limit));
   response.headers.set("X-RateLimit-Remaining", String(remaining));
 
   return response;

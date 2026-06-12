@@ -72,7 +72,10 @@ export const subscriptions = pgTable(
     currentPeriodEnd: timestamp("currentPeriodEnd", { mode: "date" }),
     updatedAt: timestamp("updatedAt", { mode: "date" }).notNull().defaultNow(),
   },
-  (t) => [uniqueIndex("subscription_userId_unique").on(t.userId)],
+  (t) => [
+    uniqueIndex("subscription_userId_unique").on(t.userId),
+    index("subscription_status_periodEnd_idx").on(t.status, t.currentPeriodEnd),
+  ],
 );
 
 // Daily download counter for free-tier quota. day = 'YYYY-MM-DD' (UTC).
@@ -85,7 +88,7 @@ export const usageDaily = pgTable(
     day: text("day").notNull(),
     downloads: integer("downloads").notNull().default(0),
   },
-  (t) => [primaryKey({ columns: [t.userId, t.day] })],
+  (t) => [primaryKey({ columns: [t.userId, t.day] }), index("usage_daily_day_idx").on(t.day)],
 );
 
 // Entitlement granted by a webhook whose email had no matching user yet.
@@ -138,6 +141,7 @@ export const urlFailures = pgTable(
   (t) => [
     uniqueIndex("url_failure_url_reason_unique").on(t.url, t.reason),
     index("url_failure_lastSeenAt_idx").on(t.lastSeenAt),
+    index("url_failure_host_resolved_idx").on(t.host, t.resolved),
   ],
 );
 
@@ -158,3 +162,23 @@ export const planConfig = pgTable("plan_config", {
   priceLabel: text("priceLabel"),
   updatedAt: timestamp("updatedAt", { mode: "date" }).notNull().defaultNow(),
 });
+
+// Audit trail for sensitive admin actions.
+export const adminAuditLog = pgTable(
+  "admin_audit_log",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    actorId: text("actorId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    targetUserId: text("targetUserId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    action: text("action").notNull(),
+    payload: text("payload"),
+    createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
+  },
+  (t) => [index("admin_audit_log_createdAt_idx").on(t.createdAt)],
+);

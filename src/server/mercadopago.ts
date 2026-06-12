@@ -5,6 +5,7 @@ import { AppError } from "@/features/media-downloader/domain/errors";
 // Docs: https://www.mercadopago.com.br/developers/en/reference/subscriptions/_preapproval/post
 
 const MP_API = "https://api.mercadopago.com";
+const MP_TIMEOUT_MS = 10_000;
 
 function accessToken(): string {
   const token = process.env.MP_ACCESS_TOKEN;
@@ -12,6 +13,27 @@ function accessToken(): string {
     throw new AppError("Assinatura indisponível no momento.", "BILLING_UNAVAILABLE", 503);
   }
   return token;
+}
+
+async function fetchWithTimeout(
+  input: string | URL,
+  init: RequestInit & { timeoutMs?: number } = {},
+): Promise<Response> {
+  const { timeoutMs = MP_TIMEOUT_MS, ...rest } = init;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch(input, { ...rest, signal: controller.signal });
+    return res;
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new AppError("Timeout ao consultar Mercado Pago.", "BILLING_ERROR", 504);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 export interface MpPreapproval {
@@ -31,7 +53,7 @@ export async function createPreapproval(params: {
   amount: number;
   backUrl: string;
 }): Promise<{ id: string; initPoint: string }> {
-  const res = await fetch(`${MP_API}/preapproval`, {
+  const res = await fetchWithTimeout(`${MP_API}/preapproval`, {
     method: "POST",
     headers: { Authorization: `Bearer ${accessToken()}`, "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -62,7 +84,7 @@ export async function createPreapproval(params: {
 }
 
 export async function getPreapproval(id: string): Promise<MpPreapproval> {
-  const res = await fetch(`${MP_API}/preapproval/${id}`, {
+  const res = await fetchWithTimeout(`${MP_API}/preapproval/${id}`, {
     headers: { Authorization: `Bearer ${accessToken()}` },
   });
   if (!res.ok) {
@@ -72,7 +94,7 @@ export async function getPreapproval(id: string): Promise<MpPreapproval> {
 }
 
 export async function getAuthorizedPayment(id: string): Promise<{ preapproval_id?: string; status?: string }> {
-  const res = await fetch(`${MP_API}/authorized_payments/${id}`, {
+  const res = await fetchWithTimeout(`${MP_API}/authorized_payments/${id}`, {
     headers: { Authorization: `Bearer ${accessToken()}` },
   });
   if (!res.ok) {
@@ -105,7 +127,7 @@ export async function createCheckoutPreference(params: {
   backUrl: string;
   notificationUrl?: string;
 }): Promise<{ id: string; initPoint: string }> {
-  const res = await fetch(`${MP_API}/checkout/preferences`, {
+  const res = await fetchWithTimeout(`${MP_API}/checkout/preferences`, {
     method: "POST",
     headers: { Authorization: `Bearer ${accessToken()}`, "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -140,7 +162,7 @@ export async function createCheckoutPreference(params: {
 }
 
 export async function getPayment(id: string): Promise<MpPayment> {
-  const res = await fetch(`${MP_API}/v1/payments/${id}`, {
+  const res = await fetchWithTimeout(`${MP_API}/v1/payments/${id}`, {
     headers: { Authorization: `Bearer ${accessToken()}` },
   });
   if (!res.ok) {
@@ -191,8 +213,11 @@ export function verifyWebhookSignature(opts: {
 
   const parts: Record<string, string> = {};
   for (const segment of opts.signature.split(",")) {
-    const [k, v] = segment.split("=");
-    if (k && v) parts[k.trim()] = v.trim();
+    const eqIndex = segment.indexOf("=");
+    if (eqIndex === -1) continue;
+    const k = segment.slice(0, eqIndex).trim();
+    const v = segment.slice(eqIndex + 1).trim();
+    if (k && v) parts[k] = v;
   }
   const ts = parts.ts;
   const v1 = parts.v1;

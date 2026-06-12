@@ -3,7 +3,7 @@
 import { CheckSquare, Crown, Download, Image as ImageIcon, Package, Square, Video, X } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useUpgrade } from "@/components/upgrade/upgrade-context";
-import { notifyUsageChanged } from "@/hooks/use-me";
+import { useDownloadZip } from "@/hooks/use-download-zip";
 import { usePricing } from "@/hooks/use-pricing";
 import type { AnalyzePageResult, MediaAsset } from "../domain/types";
 import { MediaCard } from "./media-card";
@@ -18,26 +18,18 @@ interface MediaGalleryProps {
 export function MediaGallery({ result }: MediaGalleryProps) {
   const [filter, setFilter] = useState<FilterType>("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [isZipping, setIsZipping] = useState(false);
-  const [zipMsg, setZipMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const zipAbortRef = useRef<AbortController | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const { open: openUpgrade } = useUpgrade();
   const { proPriceLabel } = usePricing();
-
-  useEffect(() => {
-    return () => {
-      zipAbortRef.current?.abort();
-    };
-  }, []);
-
-  // Auto-dismiss the success toast (errors stay until the user retries/acts).
-  useEffect(() => {
-    if (zipMsg?.type !== "ok") return;
-    const timer = setTimeout(() => setZipMsg(null), 4000);
-    return () => clearTimeout(timer);
-  }, [zipMsg]);
+  const host = useMemo(() => {
+    try {
+      return new URL(result.url).hostname.replace(/^www\./, "");
+    } catch {
+      return result.url;
+    }
+  }, [result.url]);
+  const { isZipping, zipMessage, downloadZip, cancelZip } = useDownloadZip({ host, onUpgradeRequired: openUpgrade });
 
   // ─── Derived data ───
 
@@ -128,74 +120,6 @@ export function MediaGallery({ result }: MediaGalleryProps) {
     setVisibleCount(PAGE_SIZE);
   }
 
-  const cancelZip = useCallback(() => {
-    zipAbortRef.current?.abort();
-    setIsZipping(false);
-  }, []);
-
-  async function handleDownloadZip() {
-    if (!assetsForZip.length) return;
-    const assetsToZip = assetsForZip.slice(0, 200);
-
-    const zipCount = assetsToZip.length;
-    const controller = new AbortController();
-    zipAbortRef.current = controller;
-    setIsZipping(true);
-    setZipMsg(
-      assetsForZip.length > 200
-        ? { type: "err", text: "Limite de 200 arquivos por ZIP. Os primeiros 200 serão incluídos." }
-        : null,
-    );
-    try {
-      const res = await fetch("/api/download-zip", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assets: assetsToZip }),
-        signal: controller.signal,
-      });
-
-      if (controller.signal.aborted) return;
-
-      if (!res.ok) {
-        if (res.status === 402) {
-          setZipMsg(null);
-          openUpgrade("o download em ZIP");
-          return;
-        }
-        const data = await res.json();
-        setZipMsg({ type: "err", text: data.error?.message ?? "Erro ao gerar ZIP." });
-        return;
-      }
-
-      const blob = await res.blob();
-      if (controller.signal.aborted) return;
-
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = blobUrl;
-      a.download = `grabix-${host}.zip`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-      setZipMsg({ type: "ok", text: `${zipCount} arquivo${zipCount !== 1 ? "s" : ""} no ZIP.` });
-      notifyUsageChanged();
-    } catch (err) {
-      if (err instanceof DOMException && err.name === "AbortError") return;
-      setZipMsg({ type: "err", text: "Erro de conexão ao gerar ZIP." });
-    } finally {
-      setIsZipping(false);
-    }
-  }
-
-  const host = useMemo(() => {
-    try {
-      return new URL(result.url).hostname.replace(/^www\./, "");
-    } catch {
-      return result.url;
-    }
-  }, [result.url]);
-
   const allFilteredSelected = filtered.length > 0 && filtered.every((a) => selected.has(a.url));
 
   const zipLabel =
@@ -257,7 +181,7 @@ export function MediaGallery({ result }: MediaGalleryProps) {
             ) : (
               <button
                 type="button"
-                onClick={handleDownloadZip}
+                onClick={() => downloadZip(assetsForZip)}
                 disabled={assetsForZip.length === 0}
                 className="btn-primary inline-flex h-9 items-center gap-2 rounded-xl px-4 text-xs font-bold"
               >
@@ -313,17 +237,17 @@ export function MediaGallery({ result }: MediaGalleryProps) {
       ) : null}
 
       {/* ZIP feedback */}
-      {zipMsg && (
+      {zipMessage && (
         <div
           role="status"
           aria-live="polite"
           className={`rounded-xl px-4 py-3 text-sm font-medium ${
-            zipMsg.type === "ok"
+            zipMessage.type === "ok"
               ? "border border-[var(--g-success-border)] bg-[var(--g-success-bg)] text-[var(--g-success)]"
               : "border border-[var(--g-danger-border)] bg-[var(--g-danger-bg)] text-[var(--g-danger)]"
           }`}
         >
-          {zipMsg.text}
+          {zipMessage.text}
         </div>
       )}
 

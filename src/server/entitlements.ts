@@ -16,7 +16,7 @@ export interface EntitlementData {
 
 const REVOKED_NOW = new Set(["refunded", "chargeback", "expired", "inactive", "past_due"]);
 
-function isActive(status: string, currentPeriodEnd: Date | null | undefined): boolean {
+export function isActive(status: string, currentPeriodEnd: Date | null | undefined): boolean {
   if (REVOKED_NOW.has(status)) return false;
   // "canceled" keeps access until the period the user already paid for ends.
   if (status === "canceled") return !!currentPeriodEnd && currentPeriodEnd.getTime() > Date.now();

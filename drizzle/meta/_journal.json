@@ -22,6 +22,13 @@
       "when": 1781204003376,
       "tag": "0002_thick_wolfsbane",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1781286585642,
+      "tag": "0003_previous_maestro",
+      "breakpoints": true
     }
   ]
 }

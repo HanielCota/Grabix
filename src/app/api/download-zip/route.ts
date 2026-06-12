@@ -7,10 +7,17 @@ import { buildContentDisposition } from "@/lib/files/file-name";
 import { handleApiError } from "@/server/api-utils";
 import { requireUser } from "@/server/auth-guard";
 import { consumeDownloadQuota, getUserPlan, refundDownloadQuota } from "@/server/entitlements";
+import { checkRateLimit } from "@/server/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
     const user = await requireUser();
+
+    const rl = await checkRateLimit(`zip:${user.id}`, { max: 20, windowMs: 60_000 });
+    if (rl.limited) {
+      throw Errors.rateLimited();
+    }
+
     const plan = await getUserPlan(user.id);
 
     const body = await request.json();

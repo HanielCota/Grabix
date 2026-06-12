@@ -14,6 +14,7 @@ export interface RateResult {
   limited: boolean;
   remaining: number;
   resetAt: number;
+  limit: number;
 }
 
 const redis =
@@ -46,7 +47,7 @@ function memCheck(key: string, now: number, max: number, windowMs: number): Rate
   if (!bucket || now > bucket.resetAt) {
     const resetAt = now + windowMs;
     buckets.set(key, { count: 1, resetAt });
-    return { limited: false, remaining: max - 1, resetAt };
+    return { limited: false, remaining: max - 1, resetAt, limit: max };
   }
 
   bucket.count++;
@@ -54,6 +55,7 @@ function memCheck(key: string, now: number, max: number, windowMs: number): Rate
     limited: bucket.count > max,
     remaining: Math.max(0, max - bucket.count),
     resetAt: bucket.resetAt,
+    limit: max,
   };
 }
 
@@ -75,6 +77,7 @@ async function redisCheck(id: string, now: number, max: number, windowMs: number
     limited: count > max,
     remaining: Math.max(0, max - count),
     resetAt,
+    limit: max,
   };
 }
 

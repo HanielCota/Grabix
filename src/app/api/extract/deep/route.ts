@@ -10,6 +10,8 @@ import { checkRateLimit } from "@/server/rate-limit";
 import { validateDnsResolution, validateUrlFormat } from "@/server/security";
 import { recordUrlFailure } from "@/server/url-failures";
 
+const DEEP_CRAWL_TIMEOUT_MS = 30_000;
+
 export async function POST(request: NextRequest) {
   let body: unknown;
   try {
@@ -24,6 +26,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // Authenticate before spending any CPU/network on URL validation.
     const user = await requireUser();
 
     // Deep crawl fans out to many pages - tighter per-user budget than analyze.
@@ -46,6 +49,9 @@ export async function POST(request: NextRequest) {
     const abortController = new AbortController();
 
     request.signal.addEventListener("abort", () => abortController.abort(), { once: true });
+
+    // Global timeout to avoid serverless/function timeouts without feedback.
+    const timeoutId = setTimeout(() => abortController.abort(), DEEP_CRAWL_TIMEOUT_MS);
 
     const stream = new ReadableStream({
       async start(controller) {
@@ -70,6 +76,7 @@ export async function POST(request: NextRequest) {
           }
           send("crawl_error", { error: message });
         } finally {
+          clearTimeout(timeoutId);
           try {
             controller.close();
           } catch {
@@ -78,6 +85,7 @@ export async function POST(request: NextRequest) {
         }
       },
       cancel() {
+        clearTimeout(timeoutId);
         abortController.abort();
       },
     });
