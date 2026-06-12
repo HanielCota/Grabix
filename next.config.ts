@@ -19,12 +19,14 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      // Development needs 'unsafe-eval' for HMR; production uses bundled scripts.
-      `script-src 'self'${isDev ? " 'unsafe-inline' 'unsafe-eval'" : ""}`,
-      "style-src 'self' 'unsafe-inline'",
+      // Next.js injects inline scripts for hydration/HMR. In production we keep
+      // 'unsafe-inline' with 'strict-dynamic' so modern browsers ignore the
+      // unsafe keyword for scripts loaded by trusted scripts.
+      `script-src 'self' 'unsafe-inline' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""}`,
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' https: data:",
       "media-src 'self' https:",
-      "font-src 'self'",
+      "font-src 'self' https://fonts.gstatic.com",
       "connect-src 'self' https://api.mercadopago.com",
       "frame-ancestors 'none'",
     ].join("; "),
