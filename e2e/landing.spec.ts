@@ -25,6 +25,7 @@ test.describe("landing (signed out)", () => {
 
   test("has no serious or critical accessibility violations", async ({ page }) => {
     await page.goto("/");
+    await page.emulateMedia({ reducedMotion: "reduce" });
     // Wait for the client session to resolve and render the signed-out card.
     await page.getByRole("button", { name: /continuar com google/i }).waitFor();
 
