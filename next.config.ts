@@ -19,10 +19,10 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      // Next.js injects inline scripts for hydration/HMR. In production we keep
-      // 'unsafe-inline' with 'strict-dynamic' so modern browsers ignore the
-      // unsafe keyword for scripts loaded by trusted scripts.
-      `script-src 'self' 'unsafe-inline' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""}`,
+      // Next.js injects inline scripts for hydration/HMR. We allow 'unsafe-inline'
+      // for scripts so the app boots without a nonce-based setup; 'unsafe-eval' is
+      // only required in development (e.g. React Fast Refresh).
+      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' https: data:",
       "media-src 'self' https:",
