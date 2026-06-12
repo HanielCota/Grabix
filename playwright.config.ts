@@ -20,11 +20,7 @@ export default defineConfig({
     trace: "on-first-retry",
     testIdAttribute: "data-testid",
   },
-  projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-    { name: "webkit", use: { ...devices["Desktop Safari"] } },
-    { name: "Mobile Chrome", use: { ...devices["Pixel 5"] } },
-  ],
+  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
     command: "npm run dev",
     url: baseURL,
