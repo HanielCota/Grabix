@@ -16,7 +16,11 @@ interface LoadedConfig {
   pricing: Pricing;
 }
 
-const TTL_MS = 60_000;
+// Short TTL so an admin plan/price change propagates quickly. The cache is
+// per-instance: invalidatePlansCache() only clears the instance that handled
+// the save, so on a multi-instance (serverless) deploy this TTL is the real
+// staleness bound. plan_config is a 2-row table, so re-reading is cheap.
+const TTL_MS = 30_000;
 let cache: { data: LoadedConfig; at: number } | null = null;
 
 function codePricing(): Pricing {
