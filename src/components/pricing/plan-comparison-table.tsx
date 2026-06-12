@@ -1,8 +1,12 @@
-import { Check, Minus } from "lucide-react";
-import { PLAN_COMPARISON, type PlanComparisonRow } from "@/lib/plans/benefits";
+"use client";
 
-// Shared Free × Pro feature table, driven by PLAN_COMPARISON (itself derived from
-// PLANS). Rendered on both /pricing and the landing page so the two never drift.
+import { Check, Minus } from "lucide-react";
+import { usePlans } from "@/hooks/use-plans";
+import { getPlanComparison, type PlanComparisonRow } from "@/lib/plans/benefits";
+
+// Shared Free × Pro feature table, driven by the admin-editable plan config from
+// `/api/plans`. Rendered on both /pricing and the landing page so the two stay
+// in sync with admin changes.
 
 function Cell({ value }: { value: string | boolean }) {
   if (typeof value === "boolean") {
@@ -34,6 +38,9 @@ function ComparisonRow({ row }: { row: PlanComparisonRow }) {
 }
 
 export function PlanComparisonTable() {
+  const { plans, loading } = usePlans();
+  const rows = plans ? getPlanComparison(plans) : [];
+
   return (
     <div className="overflow-hidden rounded-2xl border border-[var(--g-line)] bg-[var(--g-surface-1)]">
       <table className="w-full border-collapse">
@@ -52,9 +59,15 @@ export function PlanComparisonTable() {
           </tr>
         </thead>
         <tbody className="[&_th[scope=row]]:pl-5">
-          {PLAN_COMPARISON.map((row) => (
-            <ComparisonRow key={row.feature} row={row} />
-          ))}
+          {loading && rows.length === 0 ? (
+            <tr>
+              <td colSpan={3} className="py-6 text-center text-sm text-[var(--g-muted)]">
+                Carregando…
+              </td>
+            </tr>
+          ) : (
+            rows.map((row) => <ComparisonRow key={row.feature} row={row} />)
+          )}
         </tbody>
       </table>
     </div>

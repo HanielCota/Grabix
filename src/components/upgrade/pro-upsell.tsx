@@ -3,8 +3,9 @@
 import { Check, Crown } from "lucide-react";
 import { signIn, useSession } from "next-auth/react";
 import { useMe } from "@/hooks/use-me";
+import { usePlans } from "@/hooks/use-plans";
 import { usePricing } from "@/hooks/use-pricing";
-import { benefitText, PRO_BENEFITS } from "@/lib/plans/benefits";
+import { benefitText, getProBenefits } from "@/lib/plans/benefits";
 import { useUpgrade } from "./upgrade-context";
 
 // Always-visible "what's in Pro" block on the home page, so non-subscribers see
@@ -14,12 +15,14 @@ export function ProUpsell() {
   const { status } = useSession();
   const { me } = useMe();
   const { proPriceLabel } = usePricing();
+  const { plans } = usePlans();
   const { open: openUpgrade } = useUpgrade();
 
   if (me?.plan === "pro") return null;
 
   const authed = status === "authenticated";
   const handleCta = () => (authed ? openUpgrade() : signIn("google", { callbackUrl: "/" }));
+  const benefits = plans ? getProBenefits(plans) : [];
 
   return (
     <section
@@ -53,7 +56,7 @@ export function ProUpsell() {
       </div>
 
       <ul className="mt-5 grid grid-cols-1 gap-x-6 gap-y-2.5 sm:grid-cols-2">
-        {PRO_BENEFITS.map((b) => (
+        {benefits.map((b) => (
           <li key={b.label} className="flex items-start gap-2.5 text-sm text-[var(--g-sub)]">
             <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[var(--g-accent-soft)] text-[var(--g-ink)]">
               <Check className="h-3 w-3" strokeWidth={3} />

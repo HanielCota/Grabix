@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Loader2, RefreshCw } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 interface Overview {
   totalUsers: number;
@@ -16,17 +17,46 @@ const brl = (cents: number) => (cents / 100).toLocaleString("pt-BR", { style: "c
 export default function AdminOverviewPage() {
   const [data, setData] = useState<Overview | null>(null);
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true);
     fetch("/api/admin/overview")
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("err"))))
       .then(setData)
-      .catch(() => setError(true));
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    load();
+    window.addEventListener("focus", load);
+    return () => window.removeEventListener("focus", load);
+  }, [load]);
 
   if (error) return <p className="text-sm text-[var(--g-danger)]">Erro ao carregar a visão geral.</p>;
   if (!data) return <p className="text-sm text-[var(--g-muted)]">Carregando…</p>;
 
+  return (
+    <div>
+      <div className="mb-4 flex items-center justify-between">
+        <p className="text-xs text-[var(--g-muted)]">Atualizado em tempo real ao focar a aba.</p>
+        <button
+          type="button"
+          onClick={load}
+          disabled={loading}
+          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[var(--g-line-hover)] bg-[var(--g-surface-2)] px-3 text-xs font-semibold text-[var(--g-sub)] transition-colors hover:bg-[var(--g-surface-3)] disabled:opacity-60"
+        >
+          {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+          Recarregar
+        </button>
+      </div>
+      <Cards data={data} />
+    </div>
+  );
+}
+
+function Cards({ data }: { data: Overview }) {
   const cards = [
     { label: "Usuários", value: data.totalUsers.toLocaleString("pt-BR") },
     { label: "Assinantes Pro", value: data.proActive.toLocaleString("pt-BR") },

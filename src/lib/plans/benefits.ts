@@ -1,14 +1,12 @@
-import { PLANS } from "@/server/plans";
+import type { Plan, PlanId } from "@/server/plans";
 
 // Single source of truth for the "what's in Pro" copy, derived from the actual
-// plan definitions in plans.ts so the marketing never drifts from what the
-// server enforces. Consumed by the upgrade dialog and the home-page upsell.
+// plan definitions so the marketing never drifts from what the server enforces.
+// The returned values reflect admin-edited config when called with plans from
+// the live `/api/plans` endpoint.
 
 const MB = 1024 * 1024;
 const mb = (bytes: number) => Math.round(bytes / MB);
-
-const free = PLANS.free;
-const pro = PLANS.pro;
 
 export interface PlanBenefit {
   /** What Pro gives. */
@@ -17,14 +15,18 @@ export interface PlanBenefit {
   free?: string;
 }
 
-export const PRO_BENEFITS: readonly PlanBenefit[] = [
-  { label: `${pro.limits.maxAssets} itens por análise`, free: `${free.limits.maxAssets}` },
-  { label: "Downloads diários ilimitados", free: `${free.quota.downloadsPerDay}/dia` },
-  { label: "Busca profunda (varre várias páginas)" },
-  { label: "Renderização de páginas com JavaScript" },
-  { label: `Arquivos de até ${mb(pro.limits.maxFileSizeBytes)} MB`, free: `${mb(free.limits.maxFileSizeBytes)} MB` },
-  { label: `ZIP de até ${mb(pro.limits.maxZipSizeBytes)} MB`, free: `${mb(free.limits.maxZipSizeBytes)} MB` },
-];
+export function getProBenefits(plans: Record<PlanId, Plan>): readonly PlanBenefit[] {
+  const free = plans.free;
+  const pro = plans.pro;
+  return [
+    { label: `${pro.limits.maxAssets} itens por análise`, free: `${free.limits.maxAssets}` },
+    { label: "Downloads diários ilimitados", free: `${free.quota.downloadsPerDay}/dia` },
+    { label: "Busca profunda (varre várias páginas)" },
+    { label: "Renderização de páginas com JavaScript" },
+    { label: `Arquivos de até ${mb(pro.limits.maxFileSizeBytes)} MB`, free: `${mb(free.limits.maxFileSizeBytes)} MB` },
+    { label: `ZIP de até ${mb(pro.limits.maxZipSizeBytes)} MB`, free: `${mb(free.limits.maxZipSizeBytes)} MB` },
+  ];
+}
 
 /** Flattened "label (free: X)" strings for compact list rendering. */
 export function benefitText(b: PlanBenefit): string {
@@ -41,25 +43,33 @@ export interface PlanComparisonRow {
   pro: string | boolean;
 }
 
-export const PLAN_COMPARISON: readonly PlanComparisonRow[] = [
-  { feature: "Itens por análise", free: `${free.limits.maxAssets}`, pro: `${pro.limits.maxAssets}` },
-  { feature: "Downloads por dia", free: `${free.quota.downloadsPerDay}`, pro: "Ilimitado" },
-  {
-    feature: "Tamanho máximo por arquivo",
-    free: `${mb(free.limits.maxFileSizeBytes)} MB`,
-    pro: `${mb(pro.limits.maxFileSizeBytes)} MB`,
-  },
-  {
-    feature: "Tamanho máximo do ZIP",
-    free: `${mb(free.limits.maxZipSizeBytes)} MB`,
-    pro: `${mb(pro.limits.maxZipSizeBytes)} MB`,
-  },
-  {
-    feature: "Downloads simultâneos",
-    free: `${free.limits.maxConcurrentDownloads}`,
-    pro: `${pro.limits.maxConcurrentDownloads}`,
-  },
-  { feature: "Busca profunda (varre várias páginas)", free: free.features.deepCrawl, pro: pro.features.deepCrawl },
-  { feature: "Renderização de páginas com JavaScript", free: free.features.jsRendering, pro: pro.features.jsRendering },
-  { feature: "Vídeos protegidos", free: free.features.protectedVideo, pro: pro.features.protectedVideo },
-];
+export function getPlanComparison(plans: Record<PlanId, Plan>): readonly PlanComparisonRow[] {
+  const free = plans.free;
+  const pro = plans.pro;
+  return [
+    { feature: "Itens por análise", free: `${free.limits.maxAssets}`, pro: `${pro.limits.maxAssets}` },
+    { feature: "Downloads por dia", free: `${free.quota.downloadsPerDay}`, pro: "Ilimitado" },
+    {
+      feature: "Tamanho máximo por arquivo",
+      free: `${mb(free.limits.maxFileSizeBytes)} MB`,
+      pro: `${mb(pro.limits.maxFileSizeBytes)} MB`,
+    },
+    {
+      feature: "Tamanho máximo do ZIP",
+      free: `${mb(free.limits.maxZipSizeBytes)} MB`,
+      pro: `${mb(pro.limits.maxZipSizeBytes)} MB`,
+    },
+    {
+      feature: "Downloads simultâneos",
+      free: `${free.limits.maxConcurrentDownloads}`,
+      pro: `${pro.limits.maxConcurrentDownloads}`,
+    },
+    { feature: "Busca profunda (varre várias páginas)", free: free.features.deepCrawl, pro: pro.features.deepCrawl },
+    {
+      feature: "Renderização de páginas com JavaScript",
+      free: free.features.jsRendering,
+      pro: pro.features.jsRendering,
+    },
+    { feature: "Vídeos protegidos", free: free.features.protectedVideo, pro: pro.features.protectedVideo },
+  ];
+}

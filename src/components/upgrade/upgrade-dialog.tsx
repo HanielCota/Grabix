@@ -3,9 +3,10 @@
 import { Check, Crown, Loader2, Sparkles, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
+import { usePlans } from "@/hooks/use-plans";
 import { usePricing } from "@/hooks/use-pricing";
 import { startCheckout } from "@/lib/billing/checkout";
-import { benefitText, PRO_BENEFITS } from "@/lib/plans/benefits";
+import { benefitText, getProBenefits } from "@/lib/plans/benefits";
 
 function splitPrice(label: string): { amount: string; period: string } {
   const idx = label.indexOf("/");
@@ -26,7 +27,9 @@ export function UpgradeDialog({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { proPriceLabel } = usePricing();
+  const { plans } = usePlans();
   const { amount, period } = splitPrice(proPriceLabel);
+  const benefits = plans ? getProBenefits(plans) : [];
 
   useEffect(() => {
     if (!open) return;
@@ -109,7 +112,7 @@ export function UpgradeDialog({
 
             {/* Benefits */}
             <ul className="mt-5 space-y-2.5">
-              {PRO_BENEFITS.map((b) => (
+              {benefits.map((b) => (
                 <li key={b.label} className="flex items-start gap-2.5 text-sm text-[var(--g-sub)]">
                   <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[var(--g-accent-soft)] text-[var(--g-ink)]">
                     <Check className="h-3 w-3" strokeWidth={3} />

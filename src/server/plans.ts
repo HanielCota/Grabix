@@ -63,6 +63,54 @@ export function isPlanId(value: unknown): value is PlanId {
   return value === "free" || value === "pro";
 }
 
+// ─── Serialization ───
+// JSON-friendly representation used by public APIs and client hooks. Keeping it
+// here (instead of in plans-config) avoids pulling the DB driver into the
+// browser bundle.
+
+export interface PlanSnapshot {
+  maxAssets: number;
+  maxFileSizeBytes: number;
+  maxZipSizeBytes: number;
+  maxConcurrentDownloads: number;
+  deepCrawl: boolean;
+  jsRendering: boolean;
+  protectedVideo: boolean;
+  /** `-1` means unlimited (Infinity). */
+  downloadsPerDay: number;
+}
+
+export function planToJson(plan: Plan): PlanSnapshot {
+  return {
+    maxAssets: plan.limits.maxAssets,
+    maxFileSizeBytes: plan.limits.maxFileSizeBytes,
+    maxZipSizeBytes: plan.limits.maxZipSizeBytes,
+    maxConcurrentDownloads: plan.limits.maxConcurrentDownloads,
+    deepCrawl: plan.features.deepCrawl,
+    jsRendering: plan.features.jsRendering,
+    protectedVideo: plan.features.protectedVideo,
+    downloadsPerDay: Number.isFinite(plan.quota.downloadsPerDay) ? plan.quota.downloadsPerDay : -1,
+  };
+}
+
+export function planFromJson(id: PlanId, snapshot: PlanSnapshot): Plan {
+  return {
+    id,
+    limits: {
+      maxAssets: snapshot.maxAssets,
+      maxFileSizeBytes: snapshot.maxFileSizeBytes,
+      maxZipSizeBytes: snapshot.maxZipSizeBytes,
+      maxConcurrentDownloads: snapshot.maxConcurrentDownloads,
+    },
+    features: {
+      deepCrawl: snapshot.deepCrawl,
+      jsRendering: snapshot.jsRendering,
+      protectedVideo: snapshot.protectedVideo,
+    },
+    quota: { downloadsPerDay: snapshot.downloadsPerDay < 0 ? Number.POSITIVE_INFINITY : snapshot.downloadsPerDay },
+  };
+}
+
 // ─── Pricing (display only; billing runs through Mercado Pago) ───
 // The actual checkout is created per-user server-side via /api/billing/subscribe.
 

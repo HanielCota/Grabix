@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { notifyPlansChanged } from "@/hooks/use-pricing";
 
 interface PlanData {
   maxAssets: number;
@@ -20,12 +22,14 @@ interface Pricing {
 const MB = 1024 * 1024;
 
 export default function AdminPlansPage() {
+  const router = useRouter();
   const [free, setFree] = useState<PlanData | null>(null);
   const [pro, setPro] = useState<PlanData | null>(null);
   const [pricing, setPricing] = useState<Pricing | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true);
     fetch("/api/admin/plans")
       .then((r) => r.json())
       .then((d) => {
@@ -36,14 +40,26 @@ export default function AdminPlansPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const handleSaved = () => {
+    // Tell every open browser tab (including public pages) to refetch plan config,
+    // and refresh the current Next.js route cache so server-rendered pieces update.
+    notifyPlansChanged();
+    router.refresh();
+    load();
+  };
+
   if (loading || !free || !pro || !pricing) {
     return <p className="text-sm text-[var(--g-muted)]">Carregando…</p>;
   }
 
   return (
     <div className="space-y-6">
-      <PlanForm id="free" title="Plano Grátis" data={free} pricing={null} />
-      <PlanForm id="pro" title="Plano Pro" data={pro} pricing={pricing} />
+      <PlanForm id="free" title="Plano Grátis" data={free} pricing={null} onSaved={handleSaved} />
+      <PlanForm id="pro" title="Plano Pro" data={pro} pricing={pricing} onSaved={handleSaved} />
       <p className="text-xs text-[var(--g-muted)]">
         Mudanças valem na hora para você; para os demais, em até ~1 min (cache). O valor afeta novas assinaturas no
         Mercado Pago - assinaturas existentes mantêm o preço contratado.
@@ -57,11 +73,13 @@ function PlanForm({
   title,
   data,
   pricing,
+  onSaved,
 }: {
   id: "free" | "pro";
   title: string;
   data: PlanData;
   pricing: Pricing | null;
+  onSaved?: () => void;
 }) {
   const [f, setF] = useState(data);
   const [unlimited, setUnlimited] = useState(data.downloadsPerDay < 0);
@@ -94,7 +112,12 @@ function PlanForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      setMsg(res.ok ? { ok: true, text: "Salvo!" } : { ok: false, text: "Erro ao salvar." });
+      if (res.ok) {
+        setMsg({ ok: true, text: "Salvo!" });
+        onSaved?.();
+      } else {
+        setMsg({ ok: false, text: "Erro ao salvar." });
+      }
     } catch {
       setMsg({ ok: false, text: "Erro de conexão." });
     } finally {

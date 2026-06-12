@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { handleApiError } from "@/server/api-utils";
@@ -73,6 +74,12 @@ export async function PUT(request: Request) {
       .onConflictDoUpdate({ target: planConfig.id, set: { ...values, updatedAt: new Date() } });
 
     invalidatePlansCache();
+    // Purge Next.js route caches so server-rendered public/admin pages pick up
+    // the new price/limits without waiting for the short in-memory TTL.
+    revalidatePath("/");
+    revalidatePath("/pricing");
+    revalidatePath("/admin");
+    revalidatePath("/admin/plans");
     return NextResponse.json({ ok: true });
   } catch (err) {
     return await handleApiError(err);

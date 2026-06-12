@@ -20,7 +20,7 @@ interface LoadedConfig {
 // per-instance: invalidatePlansCache() only clears the instance that handled
 // the save, so on a multi-instance (serverless) deploy this TTL is the real
 // staleness bound. plan_config is a 2-row table, so re-reading is cheap.
-const TTL_MS = 30_000;
+const TTL_MS = 5_000;
 let cache: { data: LoadedConfig; at: number } | null = null;
 
 function codePricing(): Pricing {
@@ -76,6 +76,10 @@ export async function getEffectivePlan(id: PlanId): Promise<Plan> {
 
 export async function getEffectivePricing(): Promise<Pricing> {
   return (await loadConfig()).pricing;
+}
+
+export async function getEffectivePlans(): Promise<{ plans: Record<PlanId, Plan>; pricing: Pricing }> {
+  return loadConfig();
 }
 
 export function invalidatePlansCache() {
