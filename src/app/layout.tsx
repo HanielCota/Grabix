@@ -21,13 +21,18 @@ const geistMono = Geist_Mono({
 const siteUrl = "https://grabix.app";
 
 export const metadata: Metadata = {
-  title: "Grabix - Extraia mídias de qualquer página",
+  title: {
+    default: "Grabix - Baixar imagens e videos de paginas publicas",
+    template: "%s | Grabix",
+  },
   description:
-    "Cole uma URL e extraia todas as imagens e vídeos públicos. Baixe um por um ou tudo em ZIP. Plano grátis e Pro.",
+    "Cole uma URL publica e extraia imagens e videos encontrados no HTML aberto. Baixe um por um ou tudo em ZIP. Plano gratis e Pro.",
   metadataBase: new URL(siteUrl),
+  applicationName: "Grabix",
+  alternates: { canonical: "/" },
   openGraph: {
-    title: "Grabix - Extraia mídias de qualquer página",
-    description: "Cole uma URL e extraia todas as imagens e vídeos públicos. Baixe um por um ou tudo em ZIP.",
+    title: "Grabix - Baixar imagens e videos de paginas publicas",
+    description: "Cole uma URL publica, encontre imagens e videos e baixe um por um ou tudo em ZIP.",
     url: siteUrl,
     siteName: "Grabix",
     locale: "pt_BR",
@@ -35,8 +40,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Grabix - Extraia mídias de qualquer página",
-    description: "Cole uma URL e extraia todas as imagens e vídeos públicos. Baixe um por um ou tudo em ZIP.",
+    title: "Grabix - Baixar imagens e videos de paginas publicas",
+    description: "Cole uma URL publica, encontre imagens e videos e baixe um por um ou tudo em ZIP.",
   },
   robots: {
     index: true,
@@ -51,6 +56,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         suppressHydrationWarning
         className="min-h-screen bg-[var(--g-bg)] font-sans text-[var(--g-ink)] antialiased"
       >
+        <a
+          href="#conteudo"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-[var(--g-accent)] focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-[var(--g-accent-text)]"
+        >
+          Pular para o conteúdo
+        </a>
         <AuthProvider>
           <UpgradeProvider>
             <SiteHeader />

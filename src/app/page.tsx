@@ -1,107 +1,108 @@
-"use client";
-
-import { Grab, Loader2 } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
-import { signIn, useSession } from "next-auth/react";
-import { useState } from "react";
-import { GoogleIcon } from "@/components/icons/google-icon";
+import { Grab } from "lucide-react";
+import type { Metadata } from "next";
+import { HomeExperience } from "@/components/landing/home-experience";
 import { LandingSections } from "@/components/landing/landing-sections";
-import { ProUpsell } from "@/components/upgrade/pro-upsell";
-import { MediaDownloader } from "@/features/media-downloader/components/media-downloader";
-import { ErrorBoundary } from "./error-boundary";
+
+const siteUrl = "https://grabix.app";
+
+export const metadata: Metadata = {
+  title: "Grabix - Baixar imagens e videos de paginas publicas",
+  description:
+    "Use o Grabix para extrair imagens e videos de paginas publicas pela URL. Encontre midias, baixe arquivos individuais ou gere um ZIP em poucos segundos.",
+  alternates: { canonical: "/" },
+  keywords: [
+    "baixar imagens de site",
+    "baixar videos de site",
+    "extrair imagens de URL",
+    "extrair videos de URL",
+    "download de midias",
+    "Grabix",
+  ],
+  openGraph: {
+    title: "Grabix - Baixar imagens e videos de paginas publicas",
+    description: "Cole uma URL publica, encontre imagens e videos e baixe um por um ou tudo em ZIP.",
+    url: "/",
+    siteName: "Grabix",
+    locale: "pt_BR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Grabix - Baixar imagens e videos de paginas publicas",
+    description: "Cole uma URL publica, encontre imagens e videos e baixe um por um ou tudo em ZIP.",
+  },
+};
+
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "Grabix",
+    applicationCategory: "MultimediaApplication",
+    operatingSystem: "Web",
+    url: siteUrl,
+    description:
+      "Ferramenta online para extrair imagens e videos de paginas publicas pela URL e baixar os arquivos individualmente ou em ZIP.",
+    offers: [
+      { "@type": "Offer", name: "Grabix Gratis", price: "0", priceCurrency: "BRL" },
+      { "@type": "Offer", name: "Grabix Pro", priceCurrency: "BRL" },
+    ],
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "O Grabix e gratuito?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Sim. O plano gratis permite extrair e baixar midias todos os dias dentro dos limites. O Pro libera mais itens, downloads ilimitados e busca profunda.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Que tipos de arquivo o Grabix baixa?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "O Grabix baixa imagens JPG, PNG, WebP, GIF e SVG, alem de videos MP4, WebM, MOV e streams HLS/DASH quando estao disponiveis em HTML publico.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "O Grabix funciona em qualquer site?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Funciona em paginas com HTML publico. O Grabix nao acessa conteudo atras de login nem quebra protecoes de DRM.",
+        },
+      },
+    ],
+  },
+];
 
 export default function Home() {
-  const { status } = useSession();
-  const [active, setActive] = useState(false);
-
   return (
-    <main className="mx-auto max-w-3xl px-5 pt-12 pb-10 sm:px-8 sm:pt-20">
-      {/* ── Hero (collapses once results are showing) ── */}
-      <AnimatePresence initial={false}>
-        {!active && (
-          <motion.header
-            key="hero"
-            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-            transition={{ duration: 0.3 }}
-            className="mb-10 overflow-hidden text-center sm:mb-14"
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4 }}
-              className="mb-5 inline-flex h-20 w-20 items-center justify-center rounded-3xl border border-[var(--g-line-hover)] bg-[var(--g-surface-2)]"
-            >
-              <Grab className="h-10 w-10 text-[var(--g-ink)]" strokeWidth={1.5} />
-            </motion.div>
+    <main id="conteudo" className="mx-auto max-w-3xl px-5 pt-12 pb-10 sm:px-8 sm:pt-20">
+      <script type="application/ld+json" suppressHydrationWarning>
+        {JSON.stringify(jsonLd)}
+      </script>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.05 }}
-              className="text-3xl font-bold tracking-[-0.03em] text-[var(--g-ink)] sm:text-4xl"
-            >
-              GRABIX
-            </motion.h1>
+      <header className="mb-10 overflow-hidden text-center sm:mb-14">
+        <div className="mb-5 inline-flex h-20 w-20 items-center justify-center rounded-3xl border border-[var(--g-line-hover)] bg-[var(--g-surface-2)]">
+          <Grab className="h-10 w-10 text-[var(--g-ink)]" strokeWidth={1.5} aria-hidden="true" />
+        </div>
 
-            <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-              className="mx-auto mt-4 max-w-md text-base leading-relaxed text-[var(--g-sub)] sm:text-lg"
-            >
-              Cola uma URL, o Grabix extrai todas as imagens e vídeos. Baixa um por um ou tudo em ZIP.
-            </motion.p>
-          </motion.header>
-        )}
-      </AnimatePresence>
+        <h1 className="text-3xl font-bold text-[var(--g-ink)] sm:text-4xl">GRABIX</h1>
 
-      {/* ── Input + Results ── */}
-      <motion.section
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
-        {status === "loading" ? (
-          <div className="flex items-center justify-center rounded-2xl border border-[var(--g-line)] bg-[var(--g-surface-1)] py-16">
-            <Loader2 className="h-5 w-5 animate-spin text-[var(--g-sub)]" />
-          </div>
-        ) : status === "authenticated" ? (
-          <ErrorBoundary
-            fallbackTitle="O extrator travou"
-            fallbackMessage="Algo quebrou durante a análise. Tenta de novo."
-          >
-            <MediaDownloader onActiveChange={setActive} />
-          </ErrorBoundary>
-        ) : (
-          <div className="rounded-2xl border border-[var(--g-line)] bg-[var(--g-surface-1)] p-8 text-center">
-            <p className="text-base font-semibold text-[var(--g-ink)]">Entre para começar</p>
-            <p className="mx-auto mt-2 max-w-sm text-sm text-[var(--g-sub)]">
-              Crie sua conta grátis para extrair e baixar mídias. Sem custo para começar.
-            </p>
-            <button
-              type="button"
-              onClick={() => signIn("google", { callbackUrl: "/" })}
-              className="btn-primary mx-auto mt-5 inline-flex h-11 items-center justify-center gap-2.5 rounded-xl px-6 text-sm font-semibold"
-            >
-              <GoogleIcon className="h-5 w-5" />
-              Continuar com Google
-            </button>
+        <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-[var(--g-sub)] sm:text-lg">
+          Baixe imagens e videos de paginas publicas pela URL. O Grabix encontra fotos, galerias, arquivos de video e
+          streams no HTML aberto para baixar um arquivo por vez ou tudo em ZIP.
+        </p>
+      </header>
 
-            <p className="mx-auto mt-5 max-w-sm border-t border-[var(--g-line)] pt-4 text-sm text-[var(--g-muted)]">
-              No plano grátis: <span className="font-semibold text-[var(--g-sub)]">10 itens por análise</span> e{" "}
-              <span className="font-semibold text-[var(--g-sub)]">20 downloads por dia</span>.
-            </p>
-          </div>
-        )}
-      </motion.section>
+      <HomeExperience />
+      <LandingSections />
 
-      {/* ── Pro value, visible up front for non-subscribers (hidden once results show) ── */}
-      {!active && <ProUpsell />}
-
-      {/* ── Marketing content: how it works, supported sites, plans, FAQ (hidden once results show) ── */}
-      {!active && <LandingSections />}
-
-      {/* ── Footer ── */}
       <footer className="mt-16 border-t border-[var(--g-line)] pt-5 text-center text-sm leading-relaxed text-[var(--g-muted)]">
         <p>Só lê o HTML público. Não pula login, não quebra DRM, não faz mágica.</p>
         <p className="mt-1 text-xs">v1.0.0</p>

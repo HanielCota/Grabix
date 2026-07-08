@@ -7,7 +7,8 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      // Private/auth-gated areas - no SEO value, keep crawlers out.
+      // Private/auth-gated/API areas have no search value. Pages also set
+      // noindex where they can render metadata.
       disallow: ["/admin", "/conta", "/sign-in", "/api/"],
     },
     sitemap: `${siteUrl}/sitemap.xml`,

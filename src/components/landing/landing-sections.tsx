@@ -9,7 +9,7 @@ const STEPS = [
   {
     icon: Link,
     title: "Cole a URL",
-    body: "Cole o link de qualquer página pública - um post, uma galeria ou uma loja.",
+    body: "Cole o link de qualquer página pública, como um post, uma galeria ou uma loja.",
   },
   {
     icon: ScanSearch,
