@@ -5,7 +5,7 @@ import {
   CheckSquare,
   ChevronDown,
   ChevronRight,
-  Clock,
+  FileImage,
   Filter,
   Globe,
   Image as ImageIcon,
@@ -26,10 +26,11 @@ import type { CrawlResult, MediaContentKind, MediaItem, PageKind, PageResult } f
 import { DeepCrawlMediaCard } from "./deep-crawl-media-card";
 
 type AvailabilityFilter = "all" | "downloadable" | "link_only";
-type MediaTypeFilter = "all" | "image" | "video";
+type MediaTypeFilter = "all" | "image" | "gif" | "video";
 type ConfidenceFilter = "all" | "high" | "medium" | "low";
 
 const EXT_PATTERN = /\.(\w{2,5})(?:[?#]|$)/;
+const GIF_PATTERN = /\.gif(?:[?#]|$)/i;
 const UNSAFE_FILENAME_PATTERN = /[/\\<>:"|?*]+/g;
 const DIACRITICS_PATTERN = /[\u0300-\u036f]/g;
 
@@ -63,6 +64,10 @@ function mediaItemToAsset(media: MediaItem) {
   };
   const parsed = mediaAssetSchema.safeParse(raw);
   return parsed.success ? parsed.data : null;
+}
+
+function isGifMedia(media: MediaItem): boolean {
+  return media.type === "image" && GIF_PATTERN.test(media.url);
 }
 
 export function CrawlResults({ results }: CrawlResultsProps) {
@@ -106,12 +111,17 @@ export function CrawlResults({ results }: CrawlResultsProps) {
 
   const counts = useMemo(() => {
     let images = 0;
+    let gifs = 0;
     let videos = 0;
     for (const { media } of allMedia) {
-      if (media.type === "image") images++;
-      else videos++;
+      if (media.type === "image") {
+        images++;
+        if (isGifMedia(media)) gifs++;
+      } else {
+        videos++;
+      }
     }
-    return { images, videos, total: allMedia.length };
+    return { images, gifs, videos, total: allMedia.length };
   }, [allMedia]);
 
   const availablePlatforms = useMemo(
@@ -168,7 +178,8 @@ export function CrawlResults({ results }: CrawlResultsProps) {
         const visibleMedia = page.media.filter((media) => {
           if (availabilityFilter === "downloadable" && !media.downloadable) return false;
           if (availabilityFilter === "link_only" && media.downloadable) return false;
-          if (mediaTypeFilter !== "all" && media.type !== mediaTypeFilter) return false;
+          if (mediaTypeFilter === "gif" && !isGifMedia(media)) return false;
+          if (mediaTypeFilter !== "all" && mediaTypeFilter !== "gif" && media.type !== mediaTypeFilter) return false;
           if (platformFilter !== "all" && (media.platform ?? "none") !== platformFilter) return false;
           if (contentKindFilter !== "all" && (media.contentKind ?? "none") !== contentKindFilter) return false;
           if (!matchesConfidenceFilter(media.confidence, confidenceFilter)) return false;
@@ -239,12 +250,17 @@ export function CrawlResults({ results }: CrawlResultsProps) {
 
   const filteredCounts = useMemo(() => {
     let images = 0;
+    let gifs = 0;
     let videos = 0;
     for (const { media } of filteredMedia) {
-      if (media.type === "image") images++;
-      else videos++;
+      if (media.type === "image") {
+        images++;
+        if (isGifMedia(media)) gifs++;
+      } else {
+        videos++;
+      }
     }
-    return { images, videos, total: filteredMedia.length };
+    return { images, gifs, videos, total: filteredMedia.length };
   }, [filteredMedia]);
 
   const visibleDownloadableUrls = useMemo(
@@ -432,6 +448,13 @@ export function CrawlResults({ results }: CrawlResultsProps) {
             bg="bg-sky-500/10"
           />
           <Stat
+            icon={<FileImage className="h-4 w-4" />}
+            label="GIFs"
+            value={formatStatValue(filteredCounts.gifs, counts.gifs)}
+            color="text-emerald-400"
+            bg="bg-emerald-500/10"
+          />
+          <Stat
             icon={<Video className="h-4 w-4" />}
             label="Vídeos"
             value={formatStatValue(filteredCounts.videos, counts.videos)}
@@ -444,13 +467,6 @@ export function CrawlResults({ results }: CrawlResultsProps) {
             value={formatStatValue(pageEntries.length, results.pagesCrawled)}
             color="text-amber-400"
             bg="bg-amber-500/10"
-          />
-          <Stat
-            icon={<Clock className="h-4 w-4" />}
-            label="Tempo"
-            value={results.crawlDurationMs > 0 ? `${(results.crawlDurationMs / 1000).toFixed(1)}s` : "-"}
-            color="text-[var(--g-ink)]"
-            bg="bg-[var(--g-accent-soft)]"
           />
         </div>
 
@@ -888,7 +904,7 @@ function FilterPanel({
   if (mediaTypeFilter !== "all")
     activeChips.push({
       key: "media",
-      label: mediaTypeFilter === "image" ? "Imagens" : "Vídeos",
+      label: formatMediaTypeFilter(mediaTypeFilter),
       onRemove: () => onMediaTypeChange("all"),
     });
   if (platformFilter !== "all")
@@ -1030,6 +1046,7 @@ function FilterPanel({
                     options={[
                       { value: "all", label: "Todos" },
                       { value: "image", label: "Imagens" },
+                      { value: "gif", label: "GIFs" },
                       { value: "video", label: "Vídeos" },
                     ]}
                   />
@@ -1184,6 +1201,19 @@ function matchesConfidenceFilter(confidence: number | null, filter: ConfidenceFi
 
 function formatStatValue(filtered: number, total: number): number | string {
   return filtered === total ? total : `${filtered}/${total}`;
+}
+
+function formatMediaTypeFilter(filter: string): string {
+  switch (filter) {
+    case "image":
+      return "Imagens";
+    case "gif":
+      return "GIFs";
+    case "video":
+      return "Vídeos";
+    default:
+      return "Todos";
+  }
 }
 
 function normalizeText(value: string): string {

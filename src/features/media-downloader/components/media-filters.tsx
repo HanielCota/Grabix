@@ -1,20 +1,21 @@
 "use client";
 
-import { Image as ImageIcon, LayoutGrid, Video } from "lucide-react";
+import { FileImage, Image as ImageIcon, LayoutGrid, Video } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { memo } from "react";
 
-export type FilterType = "all" | "IMAGE" | "VIDEO";
+export type FilterType = "all" | "IMAGE" | "GIF" | "VIDEO";
 
 interface MediaFiltersProps {
   active: FilterType;
   onChange: (filter: FilterType) => void;
-  counts: { all: number; IMAGE: number; VIDEO: number };
+  counts: { all: number; IMAGE: number; GIF: number; VIDEO: number };
 }
 
 const FILTERS: { value: FilterType; label: string; icon: React.ReactNode }[] = [
   { value: "all", label: "Todos", icon: <LayoutGrid className="h-3.5 w-3.5" /> },
   { value: "IMAGE", label: "Imagens", icon: <ImageIcon className="h-3.5 w-3.5" /> },
+  { value: "GIF", label: "GIFs", icon: <FileImage className="h-3.5 w-3.5" /> },
   { value: "VIDEO", label: "Vídeos", icon: <Video className="h-3.5 w-3.5" /> },
 ];
 
