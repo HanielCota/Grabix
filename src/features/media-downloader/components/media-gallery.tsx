@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckSquare, Crown, Download, Image as ImageIcon, Package, Square, Video, X } from "lucide-react";
+import { CheckSquare, Crown, Download, FileImage, Image as ImageIcon, Package, Square, Video, X } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useUpgrade } from "@/components/upgrade/upgrade-context";
 import { useDownloadZip } from "@/hooks/use-download-zip";
@@ -35,16 +35,22 @@ export function MediaGallery({ result }: MediaGalleryProps) {
 
   const counts = useMemo(() => {
     let img = 0;
+    let gif = 0;
     let vid = 0;
     for (const a of result.assets) {
-      if (a.type === "IMAGE") img++;
-      else vid++;
+      if (a.type === "IMAGE") {
+        img++;
+        if (a.extension === "gif") gif++;
+      } else {
+        vid++;
+      }
     }
-    return { all: result.assets.length, IMAGE: img, VIDEO: vid };
+    return { all: result.assets.length, IMAGE: img, GIF: gif, VIDEO: vid };
   }, [result.assets]);
 
   const filtered = useMemo(() => {
     if (filter === "all") return result.assets;
+    if (filter === "GIF") return result.assets.filter((a) => a.extension === "gif");
     return result.assets.filter((a) => a.type === filter);
   }, [result.assets, filter]);
 
@@ -193,13 +199,20 @@ export function MediaGallery({ result }: MediaGalleryProps) {
         </div>
 
         {/* Stats row */}
-        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
           <Stat
             icon={<ImageIcon className="h-4 w-4" />}
             label="Imagens"
             value={counts.IMAGE}
             color="text-sky-400"
             bg="bg-sky-500/10"
+          />
+          <Stat
+            icon={<FileImage className="h-4 w-4" />}
+            label="GIFs"
+            value={counts.GIF}
+            color="text-emerald-400"
+            bg="bg-emerald-500/10"
           />
           <Stat
             icon={<Video className="h-4 w-4" />}
