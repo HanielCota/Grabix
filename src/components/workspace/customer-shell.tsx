@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleHelp, Download, FileSearch, History, Menu, Settings, Sparkles, X } from "lucide-react";
+import { CircleHelp, Download, FileSearch, History, Menu, Settings, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -13,9 +13,10 @@ const navigation = [
   { href: "/conta", label: "Minha conta", icon: Settings },
 ] as const;
 
-const pageMeta: Record<string, { title: string; description: string }> = {
-  "/": { title: "Extrair mídias", description: "Analise uma página pública e baixe os arquivos que precisar." },
-  "/conta": { title: "Minha conta", description: "Gerencie seu perfil, plano e limite de downloads." },
+const mobileTitles: Record<string, string> = {
+  "/": "Nova análise",
+  "/analyses": "Minhas análises",
+  "/conta": "Minha conta",
 };
 
 function navClass(active: boolean) {
@@ -57,7 +58,7 @@ function Brand({ onNavigate }: { onNavigate?: () => void }) {
 export function CustomerShell({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
-  const page = pageMeta[pathname] ?? pageMeta["/"];
+  const mobileTitle = mobileTitles[pathname] ?? "Grabix";
 
   useEffect(() => {
     trackConversion("workspace_view", { page: pathname });
@@ -73,22 +74,9 @@ export function CustomerShell({ children }: { children: React.ReactNode }) {
           <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--g-muted)]">Workspace</p>
           <WorkspaceLinks />
         </div>
-        <div className="mt-auto rounded-2xl border border-[var(--g-line)] bg-[var(--g-surface-1)] p-3">
-          <Sparkles className="h-4 w-4 text-[var(--g-brand-light)]" />
-          <p className="mt-3 text-xs font-semibold text-[var(--g-ink)]">Precisa de mais capacidade?</p>
-          <p className="mt-1 text-xs leading-5 text-[var(--g-muted)]">
-            O Pro libera mais arquivos e downloads sem limite diário.
-          </p>
-          <Link
-            href="/pricing"
-            className="mt-3 inline-flex text-xs font-bold text-[var(--g-brand-light)] hover:text-[var(--g-ink)]"
-          >
-            Conhecer o Pro
-          </Link>
-        </div>
       </aside>
 
-      <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between border-b border-[var(--g-line)] bg-[var(--g-bg)]/90 px-4 backdrop-blur sm:px-6 lg:px-10">
+      <header className="sticky top-0 z-30 flex min-h-14 items-center justify-between border-b border-[var(--g-line)] bg-[var(--g-bg)]/90 px-4 backdrop-blur sm:px-6 lg:px-10">
         <div className="flex min-w-0 items-center gap-3">
           <button
             type="button"
@@ -98,10 +86,7 @@ export function CustomerShell({ children }: { children: React.ReactNode }) {
           >
             <Menu className="h-4 w-4" />
           </button>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-[var(--g-ink)]">{page.title}</p>
-            <p className="hidden truncate text-xs text-[var(--g-muted)] sm:block">{page.description}</p>
-          </div>
+          <p className="truncate text-sm font-semibold text-[var(--g-ink)] lg:hidden">{mobileTitle}</p>
         </div>
         <div className="flex items-center gap-1.5">
           <Link
@@ -146,12 +131,6 @@ export function CustomerShell({ children }: { children: React.ReactNode }) {
               <CircleHelp className="h-4 w-4" />
               Ajuda e perguntas frequentes
             </Link>
-            <div className="mt-auto rounded-2xl border border-[var(--g-line)] bg-[var(--g-surface-1)] p-4">
-              <p className="text-sm font-semibold text-[var(--g-ink)]">Aproveite melhor o Grabix</p>
-              <p className="mt-1 text-xs leading-5 text-[var(--g-muted)]">
-                Suba para Pro quando precisar de mais capacidade.
-              </p>
-            </div>
           </aside>
         </div>
       ) : null}
