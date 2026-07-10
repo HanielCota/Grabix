@@ -19,6 +19,8 @@
   --g-accent-hover: #ffffff;
   --g-accent-text: #09090b;
   --g-accent-soft: rgba(255, 255, 255, 0.04);
+  --g-brand: #3dd5b0;
+  --g-brand-light: #7cedd0;
 
   --g-accent-border: rgba(255, 255, 255, 0.12);
   /* Pro / premium accent (the crown icon) */
@@ -30,6 +32,50 @@
   --g-success-bg: rgba(74, 222, 128, 0.06);
   --g-success-border: rgba(74, 222, 128, 0.15);
   color-scheme: dark;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.section-shell {
+  width: min(100% - 2.5rem, 72rem);
+  margin-inline: auto;
+}
+
+.hero-shell {
+  border-bottom: 1px solid var(--g-line);
+  background: radial-gradient(circle at 50% 0%, rgba(61, 213, 176, 0.14), transparent 34%), #09090b;
+}
+
+.hero-glow {
+  position: absolute;
+  width: 32rem;
+  height: 32rem;
+  border-radius: 9999px;
+  filter: blur(80px);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.hero-glow-one {
+  background: #176b5b;
+  left: 50%;
+  top: -24rem;
+  transform: translateX(-50%);
+}
+.hero-glow-two {
+  background: #273c87;
+  left: 50%;
+  bottom: -28rem;
+  opacity: 0.12;
+  transform: translateX(-50%);
+}
+
+@media (max-width: 639px) {
+  .section-shell {
+    width: min(100% - 2rem, 72rem);
+  }
 }
 
 html {

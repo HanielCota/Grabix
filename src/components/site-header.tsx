@@ -10,13 +10,14 @@ import { GoogleIcon } from "@/components/icons/google-icon";
 import { useUpgrade } from "@/components/upgrade/upgrade-context";
 import { useMe } from "@/hooks/use-me";
 import { usePricing } from "@/hooks/use-pricing";
+import { trackConversion } from "@/lib/analytics";
 
 // Shared between the desktop bar and the mobile sheet so navigation never drifts.
 // Hash links jump to home-page sections from any route.
 const NAV_LINKS = [
-  { href: "/pricing", label: "Preços", icon: Tag },
   { href: "/#como-funciona", label: "Como funciona", icon: ScanSearch },
-  { href: "/#faq", label: "FAQ", icon: FileQuestion },
+  { href: "/#beneficios", label: "Recursos", icon: FileQuestion },
+  { href: "/pricing", label: "Preços", icon: Tag },
 ] as const;
 
 function isActive(pathname: string, href: string): boolean {
@@ -155,9 +156,11 @@ export function SiteHeader() {
   const isFree = plan === "free";
   const freeUsage = isFree && me?.usage?.limit != null ? { used: me.usage.used, limit: me.usage.limit } : null;
 
+  if (pathname.startsWith("/admin")) return null;
+
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--g-line)] bg-[var(--g-bg)]/80 backdrop-blur">
-      <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-5 py-3 sm:px-8">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-3 sm:px-8">
         {/* ── Brand ── */}
         <Link href="/" className="group inline-flex shrink-0 items-center gap-2.5" aria-label="Grabix - início">
           <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--g-line-hover)] bg-[var(--g-surface-2)] text-[var(--g-ink)] transition-colors group-hover:border-[var(--g-accent-border)]">
@@ -231,11 +234,14 @@ export function SiteHeader() {
               {pathname !== "/sign-in" && (
                 <button
                   type="button"
-                  onClick={() => signIn("google")}
+                  onClick={() => {
+                    trackConversion("sign_in_start", { location: "header" });
+                    signIn("google");
+                  }}
                   className="btn-primary inline-flex h-9 items-center gap-1.5 rounded-lg px-4 text-xs font-bold"
                 >
                   <GoogleIcon className="h-4 w-4" />
-                  Entrar
+                  Começar grátis
                 </button>
               )}
               <MobileNav pathname={pathname} freeUsage={null} />

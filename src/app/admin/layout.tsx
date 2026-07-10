@@ -23,11 +23,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <main className="mx-auto max-w-5xl px-5 py-8 sm:px-8">
-      <h1 className="mb-1 text-2xl font-bold tracking-[-0.02em] text-[var(--g-ink)]">Painel admin</h1>
-      <p className="mb-5 text-sm text-[var(--g-muted)]">Gerencie usuários, planos, valores e assinaturas.</p>
+    <main className="min-h-screen bg-[var(--g-bg)] lg:pl-64">
       <AdminNav />
-      <div className="mt-6">{children}</div>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-8 lg:px-10 lg:py-10">{children}</div>
     </main>
   );
 }
