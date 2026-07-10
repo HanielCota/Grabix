@@ -29,6 +29,13 @@
       "when": 1781286585642,
       "tag": "0003_previous_maestro",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783718892460,
+      "tag": "0004_equal_umar",
+      "breakpoints": true
     }
   ]
 }

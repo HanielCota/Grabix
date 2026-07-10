@@ -7,7 +7,11 @@ export type ConversionEvent =
   | "sign_in_start"
   | "pricing_view"
   | "workspace_view"
-  | "media_analysis_start";
+  | "media_analysis_start"
+  | "analysis_completed"
+  | "analysis_failed"
+  | "analysis_history_viewed"
+  | "saved_analysis_opened";
 
 type EventProperties = Record<string, string | number | boolean | undefined>;
 

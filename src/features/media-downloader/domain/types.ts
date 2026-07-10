@@ -39,6 +39,7 @@ export const mediaAssetSchema = z.object({
 export type MediaAsset = z.infer<typeof mediaAssetSchema>;
 
 export const analyzePageResultSchema = z.object({
+  analysisId: z.string().uuid().optional(),
   url: publicHttpUrlSchema,
   totalFound: z.number().int().nonnegative(),
   assets: z.array(mediaAssetSchema),

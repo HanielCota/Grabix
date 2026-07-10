@@ -145,6 +145,38 @@ export const urlFailures = pgTable(
   ],
 );
 
+// Persistent, user-owned snapshots of completed URL analyses. The media list is
+// stored as JSON text because it is already validated at the extraction boundary
+// and must be restored exactly as it was shown to the user.
+export const savedAnalyses = pgTable(
+  "saved_analysis",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    sourceUrl: text("sourceUrl").notNull(),
+    domain: text("domain").notNull(),
+    status: text("status").notNull().default("completed"),
+    deepCrawl: boolean("deepCrawl").notNull().default(false),
+    totalFound: integer("totalFound").notNull().default(0),
+    imageCount: integer("imageCount").notNull().default(0),
+    videoCount: integer("videoCount").notNull().default(0),
+    pagesScanned: integer("pagesScanned"),
+    lockedCount: integer("lockedCount").notNull().default(0),
+    assets: text("assets").notNull(),
+    selectedUrls: text("selectedUrls").notNull().default("[]"),
+    createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updatedAt", { mode: "date" }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("saved_analysis_user_updated_idx").on(t.userId, t.updatedAt),
+    index("saved_analysis_user_domain_idx").on(t.userId, t.domain),
+  ],
+);
+
 // Admin-editable plan config. Rows override the code defaults (src/server/plans.ts).
 // id = 'free' | 'pro'. downloadsPerDay = -1 means unlimited. priceAmountCents in
 // BRL cents (e.g. 1990 = R$ 19,90), only meaningful for paid plans.
