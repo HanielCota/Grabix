@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckSquare, Crown, Download, FileImage, Image as ImageIcon, Package, Square, Video, X } from "lucide-react";
+import Link from "next/link";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useUpgrade } from "@/components/upgrade/upgrade-context";
 import { useDownloadZip } from "@/hooks/use-download-zip";
@@ -10,14 +11,17 @@ import { MediaCard } from "./media-card";
 import { type FilterType, MediaFilters } from "./media-filters";
 
 const PAGE_SIZE = 24;
+const EMPTY_SELECTION: string[] = [];
 
 interface MediaGalleryProps {
   result: AnalyzePageResult;
+  initialSelected?: string[];
+  onSelectionChange?: (urls: string[]) => void;
 }
 
-export function MediaGallery({ result }: MediaGalleryProps) {
+export function MediaGallery({ result, initialSelected = EMPTY_SELECTION, onSelectionChange }: MediaGalleryProps) {
   const [filter, setFilter] = useState<FilterType>("all");
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [selected, setSelected] = useState<Set<string>>(() => new Set(initialSelected));
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const { open: openUpgrade } = useUpgrade();
@@ -30,6 +34,14 @@ export function MediaGallery({ result }: MediaGalleryProps) {
     }
   }, [result.url]);
   const { isZipping, zipMessage, downloadZip, cancelZip } = useDownloadZip({ host, onUpgradeRequired: openUpgrade });
+
+  useEffect(() => {
+    setSelected(new Set(initialSelected));
+  }, [initialSelected]);
+
+  useEffect(() => {
+    onSelectionChange?.([...selected]);
+  }, [onSelectionChange, selected]);
 
   // ─── Derived data ───
 
@@ -151,6 +163,14 @@ export function MediaGallery({ result }: MediaGalleryProps) {
                 <span className="ml-2 text-xs text-[var(--g-muted)]">({result.pagesScanned} páginas varridas)</span>
               )}
             </p>
+            {result.analysisId ? (
+              <Link
+                href={`/analyses/${result.analysisId}`}
+                className="mt-2 inline-flex text-xs font-semibold text-[var(--g-brand-light)] hover:text-[var(--g-ink)]"
+              >
+                Análise salva no histórico
+              </Link>
+            ) : null}
           </div>
 
           <div className="flex items-center gap-3">

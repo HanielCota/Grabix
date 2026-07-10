@@ -159,6 +159,7 @@ export function MediaDownloader({ onActiveChange }: { onActiveChange?: (active: 
       }
 
       if (parsed.data.totalFound === 0) {
+        trackConversion("analysis_completed", { deep_crawl: useDeepCrawl, asset_count: 0 });
         setState({
           status: "empty",
           message: "Nenhuma mídia pública foi encontrada nesta página.",
@@ -169,6 +170,7 @@ export function MediaDownloader({ onActiveChange }: { onActiveChange?: (active: 
       }
 
       setState({ status: "success", result: parsed.data });
+      trackConversion("analysis_completed", { deep_crawl: useDeepCrawl, asset_count: parsed.data.totalFound });
 
       requestAnimationFrame(() => {
         resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -178,6 +180,7 @@ export function MediaDownloader({ onActiveChange }: { onActiveChange?: (active: 
       });
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
+      trackConversion("analysis_failed", { deep_crawl: useDeepCrawl, stage: "request" });
       setState({ status: "error", message: "Falha na conexão. Verifique sua internet e tente novamente.", url });
     }
   }

@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { analyzePage } from "@/features/media-downloader/application/analyze-page";
 import { AppError, Errors } from "@/features/media-downloader/domain/errors";
 import { analyzePageInputSchema, analyzePageResultSchema } from "@/features/media-downloader/domain/types";
+import { saveCompletedAnalysis } from "@/server/analysis-history";
 import { handleApiError } from "@/server/api-utils";
 import { requireUser } from "@/server/auth-guard";
 import { getUserPlan } from "@/server/entitlements";
@@ -70,7 +71,15 @@ export async function POST(request: NextRequest) {
       return await handleApiError(parsedResult.error);
     }
 
-    return NextResponse.json(parsedResult.data);
+    try {
+      const saved = await saveCompletedAnalysis(user.id, parsedResult.data, deepCrawl);
+      return NextResponse.json({ ...parsedResult.data, analysisId: saved.id });
+    } catch (saveError) {
+      // A temporary history-store issue must not take away a completed analysis.
+      // biome-ignore lint/suspicious/noConsole: operator-facing persistence warning
+      console.warn("[Grabix] Não foi possível salvar a análise no histórico:", saveError);
+      return NextResponse.json(parsedResult.data);
+    }
   } catch (err) {
     // Record site/extraction failures (not client aborts). isActionableFailure
     // inside recordUrlFailure filters out user-side codes (auth, quota, etc.).

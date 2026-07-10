@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleHelp, Download, FileSearch, Menu, Settings, Sparkles, X } from "lucide-react";
+import { CircleHelp, Download, FileSearch, History, Menu, Settings, Sparkles, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -9,6 +9,7 @@ import { trackConversion } from "@/lib/analytics";
 
 const navigation = [
   { href: "/", label: "Extrair mídias", icon: FileSearch },
+  { href: "/analyses", label: "Minhas análises", icon: History },
   { href: "/conta", label: "Minha conta", icon: Settings },
 ] as const;
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { AlertCircle, ArrowRight, Globe, Loader2, Search, Sparkles, X, Zap } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { DeepCrawlToggle } from "@/components/deep-crawl-toggle";
 import { useUpgrade } from "@/components/upgrade/upgrade-context";
@@ -22,6 +23,7 @@ interface UrlInputProps {
 export function UrlInput({ onSubmit, isLoading, resetKey }: UrlInputProps) {
   const { me } = useMe();
   const { open: openUpgrade } = useUpgrade();
+  const searchParams = useSearchParams();
   const deepLocked = me?.plan !== "pro";
   const [url, setUrl] = useState("");
   const [touched, setTouched] = useState(false);
@@ -38,6 +40,13 @@ export function UrlInput({ onSubmit, isLoading, resetKey }: UrlInputProps) {
       setTouched(false);
     }
   }, [resetKey]);
+
+  useEffect(() => {
+    const presetUrl = searchParams.get("url");
+    if (!presetUrl || getPublicUrlError(presetUrl)) return;
+    setUrl(presetUrl);
+    setTouched(false);
+  }, [searchParams]);
 
   const validationError = useMemo(() => {
     if (!touched || !url.trim()) return null;
