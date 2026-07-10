@@ -2,6 +2,7 @@
 
 import { Check, ExternalLink, RotateCcw, Search, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { AdminCard, AdminEmptyState, AdminErrorState, AdminLoadingRows, AdminPageHeader } from "@/components/admin/ui";
 
 interface FailureRow {
   id: string;
@@ -48,17 +49,22 @@ export default function AdminFailedUrlsPage() {
   const [includeResolved, setIncludeResolved] = useState(false);
   const [items, setItems] = useState<FailureRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const load = useCallback((query: string, withResolved: boolean) => {
     setLoading(true);
+    setError(false);
     const params = new URLSearchParams();
     if (query) params.set("q", query);
     if (withResolved) params.set("includeResolved", "1");
     fetch(`/api/admin/failed-urls?${params.toString()}`)
       .then((r) => r.json())
       .then((d) => setItems(d.items ?? []))
-      .catch(() => setItems([]))
+      .catch(() => {
+        setItems([]);
+        setError(true);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -66,6 +72,8 @@ export default function AdminFailedUrlsPage() {
   useEffect(() => load(q, includeResolved), [load, includeResolved]);
 
   async function act(id: string, action: "resolve" | "reopen" | "delete") {
+    if (action === "delete" && !window.confirm("Excluir este registro de falha? Esta ação não pode ser desfeita."))
+      return;
     setBusyId(id);
     try {
       await fetch("/api/admin/failed-urls", {
@@ -80,7 +88,11 @@ export default function AdminFailedUrlsPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      <AdminPageHeader
+        title="Monitoramento de URLs"
+        description="Revise erros de análise, acompanhe recorrências e mantenha a fila de falhas organizada."
+      />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <form
           onSubmit={(e) => {
@@ -108,20 +120,25 @@ export default function AdminFailedUrlsPage() {
         </label>
       </div>
 
+      {error ? (
+        <AdminErrorState
+          message="Não foi possível carregar as URLs com falha."
+          onRetry={() => load(q, includeResolved)}
+        />
+      ) : null}
       {loading ? (
-        <p className="text-sm text-[var(--g-muted)]">Carregando…</p>
+        <AdminLoadingRows />
       ) : items.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-[var(--g-line)] py-10 text-center text-sm text-[var(--g-muted)]">
-          Nenhuma URL com falha por aqui. 🎉
-        </p>
+        <AdminEmptyState
+          title="Nenhuma falha para revisar"
+          description="Quando uma análise falhar, ela será registrada aqui com detalhes para investigação."
+        />
       ) : (
-        <div className="space-y-2">
+        <AdminCard className="divide-y divide-[var(--g-line)] overflow-hidden">
           {items.map((it) => (
             <div
               key={it.id}
-              className={`flex flex-col gap-3 rounded-xl border bg-[var(--g-surface-1)] p-4 sm:flex-row sm:items-center sm:justify-between ${
-                it.resolved ? "border-[var(--g-line)] opacity-60" : "border-[var(--g-line)]"
-              }`}
+              className={`flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between ${it.resolved ? "opacity-60" : ""}`}
             >
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
@@ -173,7 +190,7 @@ export default function AdminFailedUrlsPage() {
               </div>
             </div>
           ))}
-        </div>
+        </AdminCard>
       )}
     </div>
   );

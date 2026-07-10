@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AdminCard, AdminEmptyState, AdminPageHeader, AdminStatusBadge } from "@/components/admin/ui";
 
 interface Sub {
   id: string;
@@ -38,69 +39,66 @@ export default function AdminSubscriptionsPage() {
   if (loading) return <p className="text-sm text-[var(--g-muted)]">Carregando…</p>;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-7">
+      <AdminPageHeader
+        title="Assinaturas"
+        description="Acompanhe o status das assinaturas e os últimos eventos recebidos pelo provedor de pagamento."
+      />
       <section>
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-widest text-[var(--g-sub)]">Assinaturas</h2>
+        <h2 className="mb-3 text-sm font-semibold text-[var(--g-ink)]">Assinaturas ativas e histórico</h2>
         {subs.length === 0 ? (
-          <p className="text-sm text-[var(--g-muted)]">Nenhuma assinatura ainda.</p>
+          <AdminEmptyState
+            title="Nenhuma assinatura encontrada"
+            description="Quando uma assinatura for criada, ela aparecerá aqui com seu status e período atual."
+          />
         ) : (
-          <div className="space-y-2">
-            {subs.map((s) => (
-              <div
-                key={s.id}
-                className="flex flex-col gap-1 rounded-xl border border-[var(--g-line)] bg-[var(--g-surface-1)] p-4 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-[var(--g-ink)]">{s.email ?? s.id}</p>
-                  <p className="text-xs text-[var(--g-muted)]">
-                    {s.plan} · {s.provider ?? "-"} · período até {fmt(s.currentPeriodEnd)}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <StatusBadge status={s.status} />
+          <AdminCard className="overflow-hidden">
+            <div className="hidden grid-cols-[minmax(0,1.5fr)_0.8fr_0.65fr] gap-4 border-b border-[var(--g-line)] bg-[var(--g-surface-2)] px-5 py-3 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--g-muted)] sm:grid">
+              <span>Cliente e plano</span>
+              <span>Status</span>
+              <span>Atualizado</span>
+            </div>
+            <div className="divide-y divide-[var(--g-line)]">
+              {subs.map((s) => (
+                <div
+                  key={s.id}
+                  className="grid gap-3 px-5 py-4 sm:grid-cols-[minmax(0,1.5fr)_0.8fr_0.65fr] sm:items-center sm:gap-4"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-[var(--g-ink)]">{s.email ?? s.id}</p>
+                    <p className="text-xs text-[var(--g-muted)]">
+                      {s.plan} · {s.provider ?? "-"} · período até {fmt(s.currentPeriodEnd)}
+                    </p>
+                  </div>
+                  <AdminStatusBadge status={s.status} />
                   <span className="text-xs text-[var(--g-muted)]">{fmt(s.updatedAt)}</span>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </AdminCard>
         )}
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-widest text-[var(--g-sub)]">
-          Eventos de webhook (últimos {events.length})
-        </h2>
+        <h2 className="mb-3 text-sm font-semibold text-[var(--g-ink)]">Eventos de webhook (últimos {events.length})</h2>
         {events.length === 0 ? (
-          <p className="text-sm text-[var(--g-muted)]">Nenhum evento recebido.</p>
+          <AdminEmptyState
+            title="Nenhum webhook recebido"
+            description="Os eventos de cobrança aparecerão aqui assim que forem enviados pelo provedor."
+          />
         ) : (
-          <div className="space-y-1.5">
+          <AdminCard className="divide-y divide-[var(--g-line)] overflow-hidden">
             {events.map((e) => (
-              <div
-                key={e.id}
-                className="flex items-center justify-between rounded-lg border border-[var(--g-line)] bg-[var(--g-surface-2)] px-3 py-2 text-xs"
-              >
+              <div key={e.id} className="flex items-center justify-between gap-4 px-5 py-3 text-xs">
                 <span className="truncate font-mono text-[var(--g-sub)]">
                   {e.provider} · {e.id}
                 </span>
                 <span className="shrink-0 text-[var(--g-muted)]">{fmt(e.receivedAt)}</span>
               </div>
             ))}
-          </div>
+          </AdminCard>
         )}
       </section>
     </div>
-  );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const ok = status === "active";
-  const warn = status === "canceled" || status === "past_due";
-  const cls = ok
-    ? "border-[var(--g-success-border)] bg-[var(--g-success-bg)] text-[var(--g-success)]"
-    : warn
-      ? "border-amber-500/30 bg-amber-500/10 text-amber-400"
-      : "border-[var(--g-line-hover)] bg-[var(--g-surface-3)] text-[var(--g-sub)]";
-  return (
-    <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-bold ${cls}`}>{status}</span>
   );
 }

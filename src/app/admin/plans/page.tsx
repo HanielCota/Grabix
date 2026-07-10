@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { AdminCard, AdminLoadingRows, AdminPageHeader } from "@/components/admin/ui";
 import { notifyPlansChanged } from "@/hooks/use-pricing";
 
 interface PlanData {
@@ -53,11 +54,23 @@ export default function AdminPlansPage() {
   };
 
   if (loading || !free || !pro || !pricing) {
-    return <p className="text-sm text-[var(--g-muted)]">Carregando…</p>;
+    return (
+      <div className="space-y-7">
+        <AdminPageHeader
+          title="Planos e preço"
+          description="Defina limites, recursos e o preço exibido para cada plano do Grabix."
+        />
+        <AdminLoadingRows rows={2} />
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
+      <AdminPageHeader
+        title="Planos e preço"
+        description="Defina limites, recursos e o preço exibido para cada plano do Grabix."
+      />
       <PlanForm id="free" title="Plano Grátis" data={free} pricing={null} onSaved={handleSaved} />
       <PlanForm id="pro" title="Plano Pro" data={pro} pricing={pricing} onSaved={handleSaved} />
       <p className="text-xs text-[var(--g-muted)]">
@@ -126,8 +139,18 @@ function PlanForm({
   }
 
   return (
-    <div className="rounded-2xl border border-[var(--g-line)] bg-[var(--g-surface-1)] p-5">
-      <h2 className="mb-4 text-lg font-bold text-[var(--g-ink)]">{title}</h2>
+    <AdminCard className="p-5 sm:p-6">
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold text-[var(--g-ink)]">{title}</h2>
+          <p className="mt-1 text-sm text-[var(--g-sub)]">Ajuste capacidade e recursos incluídos neste plano.</p>
+        </div>
+        <span
+          className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${id === "pro" ? "bg-[var(--g-brand)]/10 text-[var(--g-brand-light)]" : "bg-[var(--g-surface-3)] text-[var(--g-sub)]"}`}
+        >
+          {id}
+        </span>
+      </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <NumberField label="Itens por análise" value={f.maxAssets} onChange={(v) => setF({ ...f, maxAssets: v })} />
@@ -211,7 +234,7 @@ function PlanForm({
           </span>
         )}
       </div>
-    </div>
+    </AdminCard>
   );
 }
 
