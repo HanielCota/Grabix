@@ -1,8 +1,11 @@
 import { ArrowDown, ArrowRight, CheckCircle2, Grab } from "lucide-react";
 import type { Metadata } from "next";
+import { auth } from "@/auth";
 import { ConversionLink } from "@/components/landing/conversion-link";
 import { HomeExperience } from "@/components/landing/home-experience";
 import { LandingSections } from "@/components/landing/landing-sections";
+import { CustomerShell } from "@/components/workspace/customer-shell";
+import { WorkspaceHome } from "@/components/workspace/workspace-home";
 import { landingContent } from "@/data/landing";
 
 export const metadata: Metadata = {
@@ -30,7 +33,20 @@ const jsonLd = {
     "Ferramenta online para encontrar imagens e vídeos em páginas públicas e baixar os arquivos selecionados.",
 };
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
+  if (session?.user) {
+    return (
+      <CustomerShell>
+        <WorkspaceHome />
+      </CustomerShell>
+    );
+  }
+
+  return <LandingHome />;
+}
+
+function LandingHome() {
   return (
     <main id="conteudo">
       <script type="application/ld+json" suppressHydrationWarning>
@@ -56,7 +72,7 @@ export default function Home() {
                 location="hero_primary"
                 href="#comece"
                 ariaLabel="Experimentar o Grabix — hero"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[var(--g-brand)] px-5 text-sm font-bold text-[#06241f] shadow-[0_10px_30px_rgba(48,199,170,0.2)] transition hover:bg-[var(--g-brand-light)]"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#3dd5b0] px-5 text-sm font-bold text-[#06241f] shadow-[0_10px_30px_rgba(48,199,170,0.2)] transition hover:bg-[#7cedd0]"
               >
                 {landingContent.primaryCta}
                 <ArrowRight className="h-4 w-4" />
@@ -95,7 +111,7 @@ export default function Home() {
       <footer className="border-t border-[var(--g-line)]">
         <div className="section-shell flex flex-col gap-5 py-10 text-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2 font-semibold text-[var(--g-ink)]">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--g-brand)] text-[#06241f]">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#3dd5b0] text-[#06241f]">
               <Grab className="h-4 w-4" />
             </span>
             Grabix

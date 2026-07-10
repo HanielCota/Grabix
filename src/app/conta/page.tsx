@@ -133,8 +133,14 @@ export default function ContaPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-5 py-8 sm:px-8">
-      <h1 className="mb-6 text-3xl font-bold tracking-[-0.02em] text-[var(--g-ink)]">Minha conta</h1>
+    <section className="mx-auto max-w-3xl">
+      <div className="mb-7">
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--g-brand)]">Preferências</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-[var(--g-ink)]">Perfil, plano e acesso</h1>
+        <p className="mt-2 text-sm text-[var(--g-sub)]">
+          Consulte seu uso atual e gerencie as informações da sua conta.
+        </p>
+      </div>
 
       {/* ── Profile ── */}
       <section className="flex items-center gap-4 rounded-2xl border border-[var(--g-line)] bg-[var(--g-surface-1)] p-5">
@@ -326,6 +332,6 @@ export default function ContaPage() {
           </div>
         </div>
       </section>
-    </main>
+    </section>
   );
 }
