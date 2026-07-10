@@ -156,7 +156,8 @@ export function SiteHeader() {
   const isFree = plan === "free";
   const freeUsage = isFree && me?.usage?.limit != null ? { used: me.usage.used, limit: me.usage.limit } : null;
 
-  if (pathname.startsWith("/admin")) return null;
+  if (pathname.startsWith("/admin") || (status === "authenticated" && (pathname === "/" || pathname === "/conta")))
+    return null;
 
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--g-line)] bg-[var(--g-bg)]/80 backdrop-blur">

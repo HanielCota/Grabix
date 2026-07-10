@@ -144,7 +144,7 @@ export function LandingSections() {
             </ConversionLink>
           </article>
           <article className="relative rounded-3xl border border-[var(--g-brand)]/45 bg-[#111d1c] p-7 shadow-[0_12px_40px_rgba(24,168,143,0.09)]">
-            <span className="absolute right-6 top-6 rounded-full bg-[var(--g-brand)] px-2.5 py-1 text-[10px] font-bold text-[#06241f]">
+            <span className="absolute right-6 top-6 rounded-full bg-[#3dd5b0] px-2.5 py-1 text-[10px] font-bold text-[#06241f]">
               RECOMENDADO
             </span>
             <p className="text-sm font-semibold text-[var(--g-brand-light)]">Grabix Pro</p>
@@ -165,7 +165,7 @@ export function LandingSections() {
             <ConversionLink
               location="pricing_pro"
               href="/pricing"
-              className="mt-8 inline-flex h-11 w-full items-center justify-center rounded-xl bg-[var(--g-brand)] text-sm font-bold text-[#06241f] hover:bg-[var(--g-brand-light)]"
+              className="mt-8 inline-flex h-11 w-full items-center justify-center rounded-xl bg-[#3dd5b0] text-sm font-bold text-[#06241f] hover:bg-[#7cedd0]"
             >
               Ver detalhes do Pro
             </ConversionLink>
@@ -189,7 +189,7 @@ export function LandingSections() {
       </section>
 
       <section className="section-shell pb-24 pt-4">
-        <div className="overflow-hidden rounded-[2rem] bg-[var(--g-brand)] px-6 py-12 text-center sm:px-12 sm:py-16">
+        <div className="overflow-hidden rounded-[2rem] bg-[#3dd5b0] px-6 py-12 text-center sm:px-12 sm:py-16">
           <Sparkles className="mx-auto h-6 w-6 text-[#065649]" aria-hidden="true" />
           <h2 className="mx-auto mt-4 max-w-2xl text-3xl font-semibold tracking-[-0.05em] text-[#06241f] sm:text-4xl">
             Transforme uma URL em uma galeria pronta para baixar.

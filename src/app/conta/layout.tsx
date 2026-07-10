@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { auth } from "@/auth";
+import { CustomerShell } from "@/components/workspace/customer-shell";
 
 export const metadata: Metadata = {
   title: "Minha conta",
@@ -13,6 +15,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ContaLayout({ children }: { children: React.ReactNode }) {
-  return children;
+export default async function ContaLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
+  return session?.user ? <CustomerShell>{children}</CustomerShell> : children;
 }

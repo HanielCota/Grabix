@@ -1,6 +1,13 @@
 "use client";
 
-export type ConversionEvent = "cta_click" | "extractor_view" | "extractor_start" | "sign_in_start" | "pricing_view";
+export type ConversionEvent =
+  | "cta_click"
+  | "extractor_view"
+  | "extractor_start"
+  | "sign_in_start"
+  | "pricing_view"
+  | "workspace_view"
+  | "media_analysis_start";
 
 type EventProperties = Record<string, string | number | boolean | undefined>;
 

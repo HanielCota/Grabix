@@ -8,6 +8,7 @@ import { CrawlResults } from "@/components/crawl-results";
 import { UpgradeCallout } from "@/components/upgrade/upgrade-callout";
 import { useUpgrade } from "@/components/upgrade/upgrade-context";
 import { useDeepCrawl } from "@/hooks/use-deep-crawl";
+import { trackConversion } from "@/lib/analytics";
 import type { CrawlConfig } from "@/lib/crawl/types";
 import type { AnalyzePageResult } from "../domain/types";
 import { analyzePageResultSchema } from "../domain/types";
@@ -90,6 +91,8 @@ export function MediaDownloader({ onActiveChange }: { onActiveChange?: (active: 
 
   async function handleAnalyze(url: string, useDeepCrawl = false, crawlConfig?: PartialCrawlConfig) {
     if (!url?.trim()) return;
+
+    trackConversion("media_analysis_start", { deep_crawl: useDeepCrawl });
 
     abortRef.current?.abort();
 
