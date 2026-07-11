@@ -13,12 +13,6 @@ const navigation = [
   { href: "/conta", label: "Minha conta", icon: Settings },
 ] as const;
 
-const mobileTitles: Record<string, string> = {
-  "/": "Nova análise",
-  "/analyses": "Minhas análises",
-  "/conta": "Minha conta",
-};
-
 function navClass(active: boolean) {
   return `flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold transition-colors ${
     active
@@ -58,7 +52,6 @@ function Brand({ onNavigate }: { onNavigate?: () => void }) {
 export function CustomerShell({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
-  const mobileTitle = mobileTitles[pathname] ?? "Grabix";
 
   useEffect(() => {
     trackConversion("workspace_view", { page: pathname });
@@ -86,7 +79,6 @@ export function CustomerShell({ children }: { children: React.ReactNode }) {
           >
             <Menu className="h-4 w-4" />
           </button>
-          <p className="truncate text-sm font-semibold text-[var(--g-ink)] lg:hidden">{mobileTitle}</p>
         </div>
         <div className="flex items-center gap-1.5">
           <Link
