@@ -52,13 +52,14 @@ function LandingHome() {
       <script type="application/ld+json" suppressHydrationWarning>
         {JSON.stringify(jsonLd)}
       </script>
-      <section className="hero-shell relative overflow-hidden">
+      <section className="hero-shell relative isolate overflow-hidden">
+        <div className="hero-pixel-field" aria-hidden="true" />
         <div className="hero-glow hero-glow-one" />
         <div className="hero-glow hero-glow-two" />
-        <div className="section-shell relative z-10 max-w-4xl pb-24 pt-20 text-center lg:pb-32 lg:pt-28">
-          <div className="relative z-10">
+        <div className="section-shell relative z-10 max-w-6xl py-20 text-center lg:py-28">
+          <div className="hero-panel">
             <p className="inline-flex items-center gap-2 rounded-full border border-[var(--g-brand)]/25 bg-[var(--g-brand)]/[0.08] px-3 py-1.5 text-xs font-semibold text-[var(--g-brand-light)]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[var(--g-brand-light)]" />
+              <span className="hero-status-dot h-1.5 w-1.5 rounded-full bg-[var(--g-brand-light)]" />
               {landingContent.eyebrow}
             </p>
             <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-semibold tracking-[-0.06em] text-[var(--g-ink)] sm:text-5xl lg:text-[3.7rem] lg:leading-[1.03]">
