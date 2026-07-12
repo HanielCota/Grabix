@@ -1,9 +1,17 @@
-import { ArrowRight, Check, CircleHelp, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Check, CircleHelp, Crown, ShieldCheck, Sparkles } from "lucide-react";
 import { ConversionLink } from "@/components/landing/conversion-link";
 import { SectionHeading } from "@/components/landing/section-heading";
 import { benefits, faqs, painPoints, productHighlights, productSignals, steps, supportedFormats } from "@/data/landing";
 
-export function LandingSections() {
+export function LandingSections({
+  freeBenefits,
+  proBenefits,
+  proPrice,
+}: {
+  freeBenefits: readonly string[];
+  proBenefits: readonly string[];
+  proPrice: string;
+}) {
   return (
     <div className="landing-sections">
       <section id="problema" className="section-shell grid gap-10 py-20 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
@@ -117,23 +125,25 @@ export function LandingSections() {
       </section>
 
       <section id="planos" className="section-shell py-20">
-        <SectionHeading eyebrow="Comece no seu ritmo" title="Use grátis. Evolua quando a demanda crescer.">
-          Comece com o essencial e escolha o Pro quando precisar de mais capacidade, downloads e análise aprofundada.
+        <SectionHeading eyebrow="Planos sem surpresa" title="Comece grátis. Evolua quando precisar de mais capacidade.">
+          Escolha o ritmo que faz sentido agora. O Pro libera mais recursos por 30 dias, sem renovação automática.
         </SectionHeading>
         <div className="mx-auto mt-12 grid max-w-4xl gap-4 md:grid-cols-2">
           <article className="rounded-3xl border border-[var(--g-line)] bg-[var(--g-surface-1)] p-7">
-            <p className="text-sm font-semibold text-[var(--g-ink)]">Grátis</p>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--g-brand-light)]">Para começar</p>
+            <h3 className="mt-2 text-2xl font-bold text-[var(--g-ink)]">Grátis</h3>
             <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[var(--g-ink)]">R$ 0</p>
-            <p className="mt-2 text-sm text-[var(--g-sub)]">Para testar o fluxo e usar dentro dos limites diários.</p>
+            <p className="mt-1 text-sm font-medium text-[var(--g-muted)]">sem prazo ou cobrança</p>
+            <p className="mt-4 text-sm leading-6 text-[var(--g-sub)]">
+              Teste uma página, encontre mídias públicas e faça downloads pontuais sem compromisso.
+            </p>
             <ul className="mt-6 space-y-3 text-sm text-[var(--g-sub)]">
-              <li className="flex gap-2">
-                <Check className="h-4 w-4 text-[var(--g-brand-light)]" />
-                Análise de páginas públicas
-              </li>
-              <li className="flex gap-2">
-                <Check className="h-4 w-4 text-[var(--g-brand-light)]" />
-                Downloads individuais
-              </li>
+              {freeBenefits.slice(0, 3).map((benefit) => (
+                <li key={benefit} className="flex gap-2">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--g-success)]" strokeWidth={3} />
+                  {benefit}
+                </li>
+              ))}
             </ul>
             <ConversionLink
               location="pricing_free"
@@ -143,31 +153,36 @@ export function LandingSections() {
               Começar grátis
             </ConversionLink>
           </article>
-          <article className="relative rounded-3xl border border-[var(--g-brand)]/45 bg-[#111d1c] p-7 shadow-[0_12px_40px_rgba(24,168,143,0.09)]">
-            <span className="absolute right-6 top-6 rounded-full bg-[#3dd5b0] px-2.5 py-1 text-[10px] font-bold text-[#06241f]">
-              RECOMENDADO
+          <article className="relative rounded-3xl border border-[var(--g-accent-border)] bg-[var(--g-surface-1)] p-7 shadow-[0_12px_40px_rgba(0,0,0,0.12)]">
+            <span className="absolute right-6 top-6 inline-flex items-center gap-1 rounded-full border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[var(--g-ink)]">
+              <Sparkles className="h-3 w-3 text-[var(--g-gold)]" /> Mais escolhido
             </span>
-            <p className="text-sm font-semibold text-[var(--g-brand-light)]">Grabix Pro</p>
-            <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[var(--g-ink)]">Mais liberdade</p>
-            <p className="mt-2 text-sm text-[var(--g-sub)]">
-              Para quem precisa processar mais arquivos com menos limite.
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)]">
+              <Crown className="h-5 w-5 text-[var(--g-gold)]" />
+            </span>
+            <p className="mt-4 text-xs font-bold uppercase tracking-[0.14em] text-[var(--g-brand-light)]">
+              Para uso frequente
+            </p>
+            <h3 className="mt-2 text-2xl font-bold text-[var(--g-ink)]">Grabix Pro</h3>
+            <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[var(--g-ink)]">{proPrice}</p>
+            <p className="mt-1 text-sm font-medium text-[var(--g-muted)]">pagamento único · 30 dias de acesso</p>
+            <p className="mt-4 text-sm leading-6 text-[var(--g-sub)]">
+              Para analisar páginas maiores, reunir mais arquivos e concluir trabalhos com menos etapas.
             </p>
             <ul className="mt-6 space-y-3 text-sm text-[var(--g-sub)]">
-              <li className="flex gap-2">
-                <Check className="h-4 w-4 text-[var(--g-brand-light)]" />
-                Downloads diários ilimitados
-              </li>
-              <li className="flex gap-2">
-                <Check className="h-4 w-4 text-[var(--g-brand-light)]" />
-                Busca profunda e mais recursos
-              </li>
+              {proBenefits.slice(0, 4).map((benefit) => (
+                <li key={benefit} className="flex gap-2">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--g-success)]" strokeWidth={3} />
+                  {benefit}
+                </li>
+              ))}
             </ul>
             <ConversionLink
               location="pricing_pro"
               href="/pricing"
-              className="mt-8 inline-flex h-11 w-full items-center justify-center rounded-xl bg-[#3dd5b0] text-sm font-bold text-[#06241f] hover:bg-[#7cedd0]"
+              className="btn-primary mt-8 inline-flex h-11 w-full items-center justify-center rounded-xl text-sm font-bold"
             >
-              Ver detalhes do Pro
+              Conhecer o Pro
             </ConversionLink>
           </article>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useState } from "react";
+import { trackConversion } from "@/lib/analytics";
 import { UpgradeDialog } from "./upgrade-dialog";
 
 const UpgradeContext = createContext<{ open: (reason?: string) => void }>({ open: () => {} });
@@ -17,6 +18,7 @@ export function UpgradeProvider({ children }: { children: React.ReactNode }) {
     // only treat an explicit string as a contextual reason.
     setReason(typeof reason === "string" ? reason : null);
     setIsOpen(true);
+    trackConversion("upgrade_prompt_viewed", { upgrade_reason: typeof reason === "string" ? reason : undefined });
   }, []);
   const close = useCallback(() => setIsOpen(false), []);
 

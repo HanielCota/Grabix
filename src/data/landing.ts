@@ -98,7 +98,8 @@ export const faqs = [
   },
   {
     question: "Posso cancelar o Pro quando quiser?",
-    answer: "Sim. A assinatura pode ser gerenciada pela sua conta, sem contrato de permanência.",
+    answer:
+      "O Pro é um acesso avulso de 30 dias, sem renovação automática. Ao fim do período, sua conta volta ao plano Grátis.",
   },
 ] as const;
 

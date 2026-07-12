@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { AttributionCapture } from "@/components/analytics/attribution-capture";
 import { AuthProvider } from "@/components/auth/session-provider";
 import { SiteHeader } from "@/components/site-header";
 import { ProExpiryBanner } from "@/components/upgrade/pro-expiry-banner";
@@ -64,6 +65,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </a>
         <AuthProvider>
           <UpgradeProvider>
+            <AttributionCapture />
             <SiteHeader />
             <ProExpiryBanner />
             {children}

@@ -11,7 +11,18 @@ export type ConversionEvent =
   | "analysis_completed"
   | "analysis_failed"
   | "analysis_history_viewed"
-  | "saved_analysis_opened";
+  | "saved_analysis_opened"
+  | "pricing_viewed"
+  | "billing_cycle_selected"
+  | "plan_selected"
+  | "plan_comparison_viewed"
+  | "faq_opened"
+  | "upgrade_prompt_viewed"
+  | "upgrade_prompt_clicked"
+  | "checkout_started"
+  | "checkout_completed"
+  | "checkout_failed"
+  | "subscription_activated";
 
 type EventProperties = Record<string, string | number | boolean | undefined>;
 
@@ -28,13 +39,42 @@ declare global {
 export function trackConversion(event: ConversionEvent, properties: EventProperties = {}) {
   if (typeof window === "undefined") return;
 
-  const utm = new URLSearchParams(window.location.search);
-  const campaign = Object.fromEntries([...utm].filter(([key]) => key.startsWith("utm_")));
+  const campaign = getAttribution();
   const payload = { ...properties, ...campaign };
 
   window.dataLayer?.push({ event, ...payload });
   window.gtag?.("event", event, payload);
   window.fbq?.("trackCustom", event, payload);
+}
+
+const ATTRIBUTION_KEY = "grabix:attribution:v1";
+
+/** Keep campaign attribution across sign-in and the external checkout return. */
+export function captureAttribution() {
+  if (typeof window === "undefined") return;
+  const current = Object.fromEntries(
+    [...new URLSearchParams(window.location.search)].filter(([key]) => key.startsWith("utm_")),
+  );
+  if (Object.keys(current).length === 0) return;
+  try {
+    window.localStorage.setItem(ATTRIBUTION_KEY, JSON.stringify(current));
+  } catch {
+    // Analytics must never interfere with the purchase flow.
+  }
+}
+
+function getAttribution(): Record<string, string> {
+  const fromUrl = Object.fromEntries(
+    [...new URLSearchParams(window.location.search)].filter(([key]) => key.startsWith("utm_")),
+  );
+  if (Object.keys(fromUrl).length > 0) return fromUrl;
+  try {
+    const saved = window.localStorage.getItem(ATTRIBUTION_KEY);
+    const parsed = saved ? JSON.parse(saved) : null;
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
 }
 
 export function withCurrentUtm(href: string) {
