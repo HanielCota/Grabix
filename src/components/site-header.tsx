@@ -27,14 +27,14 @@ function isActive(pathname: string, href: string): boolean {
 function PlanBadge({ plan }: { plan: "free" | "pro" }) {
   if (plan === "pro") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-lg border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)] px-2 py-1 text-xs font-bold text-[var(--g-ink)]">
+      <span className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-amber-300/15 bg-amber-300/[0.07] px-2.5 text-xs font-bold text-amber-100">
         <Crown className="h-3 w-3 text-[var(--g-gold)]" /> Pro
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center rounded-lg border border-[var(--g-line-hover)] bg-[var(--g-surface-3)] px-2 py-1 text-xs font-semibold text-[var(--g-sub)]">
-      Free
+    <span className="inline-flex h-9 items-center rounded-xl border border-[var(--g-line)] bg-black/20 px-2.5 text-xs font-semibold text-[var(--g-sub)]">
+      Plano grátis
     </span>
   );
 }
@@ -50,7 +50,7 @@ function UsagePill({ used, limit }: { used: number; limit: number }) {
   return (
     <span
       title={`${used} de ${limit} downloads usados hoje`}
-      className={`inline-flex items-center rounded-lg border px-2 py-1 text-xs font-semibold tabular-nums ${cls}`}
+      className={`inline-flex h-9 items-center rounded-xl border px-2.5 text-xs font-semibold tabular-nums ${cls}`}
     >
       {used}/{limit}
       <span className="hidden sm:inline">&nbsp;hoje</span>
@@ -63,8 +63,8 @@ function UsagePill({ used, limit }: { used: number; limit: number }) {
 function AuthSkeleton() {
   return (
     <div className="flex items-center gap-2" aria-hidden="true">
-      <span className="hidden h-7 w-14 animate-pulse rounded-lg bg-[var(--g-surface-3)] sm:block" />
-      <span className="h-9 w-9 animate-pulse rounded-full bg-[var(--g-surface-3)]" />
+      <span className="hidden h-9 w-20 animate-pulse rounded-xl bg-[var(--g-surface-3)] sm:block" />
+      <span className="h-10 w-10 animate-pulse rounded-xl bg-[var(--g-surface-3)]" />
     </div>
   );
 }
@@ -99,7 +99,7 @@ function MobileNav({ pathname, freeUsage }: { pathname: string; freeUsage: { use
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={open ? "Fechar menu" : "Abrir menu"}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--g-line-hover)] bg-[var(--g-surface-3)] text-[var(--g-sub)] transition-colors hover:bg-[var(--g-line)] hover:text-[var(--g-ink)]"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--g-line-hover)] bg-black/20 text-[var(--g-sub)] transition-colors hover:border-[var(--g-accent-border)] hover:bg-[var(--g-surface-3)] hover:text-[var(--g-ink)]"
       >
         {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
       </button>
@@ -107,17 +107,19 @@ function MobileNav({ pathname, freeUsage }: { pathname: string; freeUsage: { use
       {open && (
         <div
           role="menu"
-          className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border border-[var(--g-line-hover)] bg-[var(--g-surface-1)] shadow-2xl"
+          className="absolute right-0 z-50 mt-3 w-64 overflow-hidden rounded-2xl border border-[var(--g-line-hover)] bg-[var(--g-surface-1)]/95 p-2 shadow-[0_24px_70px_rgba(0,0,0,0.48)] backdrop-blur-xl"
         >
           {freeUsage && (
-            <div className="border-b border-[var(--g-line)] px-4 py-3">
-              <p className="text-xs text-[var(--g-muted)]">Downloads hoje</p>
-              <p className="text-sm font-semibold tabular-nums text-[var(--g-ink)]">
+            <div className="mb-2 rounded-xl border border-[var(--g-line)] bg-black/20 px-3.5 py-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--g-muted)]">
+                Downloads hoje
+              </p>
+              <p className="mt-1 text-sm font-semibold tabular-nums text-[var(--g-ink)]">
                 {freeUsage.used} de {freeUsage.limit}
               </p>
             </div>
           )}
-          <div className="p-1.5">
+          <div className="space-y-1">
             {NAV_LINKS.map((link) => {
               const active = isActive(pathname, link.href);
               return (
@@ -129,7 +131,7 @@ function MobileNav({ pathname, freeUsage }: { pathname: string; freeUsage: { use
                   aria-current={active ? "page" : undefined}
                   className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                     active
-                      ? "bg-[var(--g-surface-3)] text-[var(--g-ink)]"
+                      ? "bg-[var(--g-brand)]/10 text-[var(--g-brand-light)]"
                       : "text-[var(--g-sub)] hover:bg-[var(--g-surface-3)] hover:text-[var(--g-ink)]"
                   }`}
                 >
@@ -160,18 +162,19 @@ export function SiteHeader() {
     return null;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--g-line)] bg-[var(--g-bg)]/80 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-3 sm:px-8">
-        {/* ── Brand ── */}
+    <header className="sticky top-0 z-40 px-3 pt-3 sm:px-5 sm:pt-4">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 rounded-2xl border border-white/[0.09] bg-[rgba(15,15,17,0.86)] px-3 py-2 shadow-[0_12px_36px_rgba(0,0,0,0.2)] backdrop-blur-xl sm:px-4">
         <Link href="/" className="group inline-flex shrink-0 items-center gap-2.5" aria-label="Grabix - início">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--g-line-hover)] bg-[var(--g-surface-2)] text-[var(--g-ink)] transition-colors group-hover:border-[var(--g-accent-border)]">
-            <Grab className="h-[18px] w-[18px]" strokeWidth={1.75} />
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--g-brand)]/25 bg-[var(--g-brand)]/[0.09] text-[var(--g-brand-light)] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition duration-200 group-hover:scale-[1.04] group-hover:border-[var(--g-brand)]/45 group-hover:bg-[var(--g-brand)]/[0.15]">
+            <Grab className="h-[19px] w-[19px]" strokeWidth={1.9} />
           </span>
-          <span className="text-base font-bold tracking-[-0.01em] text-[var(--g-ink)]">Grabix</span>
+          <span className="text-[15px] font-bold tracking-[-0.025em] text-[var(--g-ink)] sm:text-base">Grabix</span>
         </Link>
 
-        {/* ── Desktop nav ── */}
-        <nav className="hidden items-center gap-1 sm:flex" aria-label="Principal">
+        <nav
+          className="hidden items-center gap-1 rounded-xl border border-white/[0.06] bg-black/20 p-1 sm:flex"
+          aria-label="Principal"
+        >
           {NAV_LINKS.map((link) => {
             const active = isActive(pathname, link.href);
             return (
@@ -179,10 +182,10 @@ export function SiteHeader() {
                 key={link.href}
                 href={link.href}
                 aria-current={active ? "page" : undefined}
-                className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors ${
+                className={`relative rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
                   active
-                    ? "bg-[var(--g-surface-3)] text-[var(--g-ink)]"
-                    : "text-[var(--g-sub)] hover:bg-[var(--g-surface-2)] hover:text-[var(--g-ink)]"
+                    ? "bg-[var(--g-surface-3)] text-[var(--g-ink)] shadow-sm"
+                    : "text-[var(--g-muted)] hover:bg-white/[0.04] hover:text-[var(--g-ink)]"
                 }`}
               >
                 {link.label}
@@ -191,7 +194,6 @@ export function SiteHeader() {
           })}
         </nav>
 
-        {/* ── Auth / actions ── */}
         <div className="flex items-center gap-2">
           {status === "loading" && <AuthSkeleton />}
 
@@ -201,7 +203,7 @@ export function SiteHeader() {
                 <Link
                   href="/admin"
                   title="Painel admin"
-                  className="hidden h-9 w-9 items-center justify-center rounded-lg border border-[var(--g-line-hover)] bg-[var(--g-surface-3)] text-[var(--g-sub)] transition-all hover:bg-[var(--g-line)] hover:text-[var(--g-ink)] sm:inline-flex"
+                  className="hidden h-9 w-9 items-center justify-center rounded-xl border border-[var(--g-line)] bg-black/20 text-[var(--g-sub)] transition-colors hover:border-[var(--g-accent-border)] hover:bg-[var(--g-surface-3)] hover:text-[var(--g-ink)] sm:inline-flex"
                 >
                   <LayoutDashboard className="h-4 w-4" />
                 </Link>
@@ -216,9 +218,9 @@ export function SiteHeader() {
                 <button
                   type="button"
                   onClick={() => openUpgrade()}
-                  className="btn-primary inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-bold"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[var(--g-brand)] px-3 text-xs font-bold text-[#06241f] shadow-[0_6px_18px_rgba(61,213,176,0.16)] transition hover:bg-[var(--g-brand-light)]"
                 >
-                  <Crown className="h-3.5 w-3.5 text-[var(--g-gold)]" />
+                  <Crown className="h-3.5 w-3.5" />
                   Assinar Pro
                   <span className="hidden font-semibold text-[var(--g-accent-text)]/65 sm:inline">
                     · {proPriceLabel}
@@ -239,7 +241,7 @@ export function SiteHeader() {
                     trackConversion("sign_in_start", { location: "header" });
                     signIn("google");
                   }}
-                  className="btn-primary inline-flex h-9 items-center gap-1.5 rounded-lg px-4 text-xs font-bold"
+                  className="inline-flex h-10 items-center gap-2 rounded-xl bg-[var(--g-brand)] px-3.5 text-xs font-bold text-[#06241f] shadow-[0_6px_18px_rgba(61,213,176,0.16)] transition hover:bg-[var(--g-brand-light)]"
                 >
                   <GoogleIcon className="h-4 w-4" />
                   Começar grátis
