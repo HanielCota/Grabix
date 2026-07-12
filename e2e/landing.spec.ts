@@ -11,7 +11,7 @@ test.describe("landing (signed out)", () => {
     await expect(page.getByRole("link", { name: "Experimentar o Grabix — hero" })).toBeVisible();
     await expect(page.getByRole("button", { name: /continuar com google/i })).toBeVisible();
     // Free-plan limits are communicated up front (unique to the signed-out card).
-    await expect(page.getByText(/20 downloads por dia/i)).toBeVisible();
+    await expect(page.getByText("20 downloads por dia", { exact: true })).toBeVisible();
   });
 
   test("surfaces the pricing path up front", async ({ page }) => {
