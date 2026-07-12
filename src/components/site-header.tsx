@@ -111,9 +111,7 @@ function MobileNav({ pathname, freeUsage }: { pathname: string; freeUsage: { use
         >
           {freeUsage && (
             <div className="mb-2 rounded-xl border border-[var(--g-line)] bg-black/20 px-3.5 py-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--g-muted)]">
-                Downloads hoje
-              </p>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--g-muted)]">Downloads hoje</p>
               <p className="mt-1 text-sm font-semibold tabular-nums text-[var(--g-ink)]">
                 {freeUsage.used} de {freeUsage.limit}
               </p>
@@ -213,7 +211,9 @@ export function SiteHeader() {
                   <UsagePill used={freeUsage.used} limit={freeUsage.limit} />
                 </span>
               )}
-              <PlanBadge plan={plan} />
+              <span className="hidden sm:inline-flex">
+                <PlanBadge plan={plan} />
+              </span>
               {isFree && (
                 <button
                   type="button"

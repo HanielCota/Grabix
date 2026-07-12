@@ -75,11 +75,11 @@ export function PlanComparisonTable() {
                   <dt className="text-sm font-medium text-[var(--g-sub)]">{row.feature}</dt>
                   <dd className="mt-2 grid grid-cols-2 gap-3 text-center text-sm">
                     <span className="rounded-lg bg-[var(--g-surface-3)] px-2 py-2">
-                      <span className="block text-[10px] font-bold uppercase text-[var(--g-muted)]">Grátis</span>
+                      <span className="block text-xs font-bold uppercase text-[var(--g-muted)]">Grátis</span>
                       <Value value={row.free} />
                     </span>
                     <span className="rounded-lg bg-[var(--g-accent-soft)] px-2 py-2">
-                      <span className="block text-[10px] font-bold uppercase text-[var(--g-sub)]">Pro</span>
+                      <span className="block text-xs font-bold uppercase text-[var(--g-sub)]">Pro</span>
                       <Value value={row.pro} />
                     </span>
                   </dd>

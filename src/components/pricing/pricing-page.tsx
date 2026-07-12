@@ -143,30 +143,7 @@ export function PricingPage() {
         <PlanComparisonTable />
       </section>
 
-      <section className="mt-16 grid gap-5 lg:grid-cols-3" aria-labelledby="use-cases-heading">
-        <div className="lg:col-span-3">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--g-brand-light)]">
-            Escolha por frequência
-          </p>
-          <h2 id="use-cases-heading" className="mt-2 text-2xl font-bold tracking-[-0.03em] text-[var(--g-ink)]">
-            Um plano para cada ritmo de uso.
-          </h2>
-        </div>
-        <UseCase title="Uso ocasional" text="Você analisa poucas páginas e faz downloads pontuais." plan="Grátis" />
-        <UseCase
-          title="Uso frequente"
-          text="Você organiza mídias de lojas, galerias ou catálogos com regularidade."
-          plan="Pro por 30 dias"
-          recommended
-        />
-        <UseCase
-          title="Trabalho concentrado"
-          text="Você tem um projeto maior e precisa encontrar e baixar muito conteúdo em menos etapas."
-          plan="Pro por 30 dias"
-        />
-      </section>
-
-      <section className="mx-auto mt-16 max-w-3xl" aria-labelledby="faq-heading">
+      <section className="mx-auto mt-14 max-w-3xl" aria-labelledby="faq-heading">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--g-brand-light)]">Sem letras miúdas</p>
         <h2 id="faq-heading" className="mt-2 text-2xl font-bold tracking-[-0.03em] text-[var(--g-ink)]">
           Perguntas antes de escolher.
@@ -240,7 +217,7 @@ function PlanCard(props: {
       className={`relative flex min-h-[480px] flex-col rounded-3xl border bg-[var(--g-surface-1)] p-6 sm:p-7 ${props.recommended ? "border-[var(--g-accent-border)] shadow-[0_12px_40px_rgba(0,0,0,0.12)]" : "border-[var(--g-line)]"}`}
     >
       {props.recommended ? (
-        <span className="absolute right-5 top-5 inline-flex items-center gap-1 rounded-full border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[var(--g-ink)]">
+        <span className="absolute right-5 top-5 inline-flex items-center gap-1 rounded-full border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)] px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-[var(--g-ink)]">
           <Sparkles className="h-3 w-3 text-[var(--g-gold)]" /> Mais escolhido
         </span>
       ) : null}
@@ -278,26 +255,5 @@ function Trust({ icon, text }: { icon: React.ReactNode; text: string }) {
       <span className="text-[var(--g-success)]">{icon}</span>
       {text}
     </div>
-  );
-}
-function UseCase({
-  title,
-  text,
-  plan,
-  recommended,
-}: {
-  title: string;
-  text: string;
-  plan: string;
-  recommended?: boolean;
-}) {
-  return (
-    <article
-      className={`rounded-2xl border p-5 ${recommended ? "border-[var(--g-accent-border)] bg-[var(--g-accent-soft)]" : "border-[var(--g-line)] bg-[var(--g-surface-1)]"}`}
-    >
-      <h3 className="font-bold text-[var(--g-ink)]">{title}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-[var(--g-sub)]">{text}</p>
-      <p className="mt-4 text-sm font-bold text-[var(--g-ink)]">Recomendado: {plan}</p>
-    </article>
   );
 }
