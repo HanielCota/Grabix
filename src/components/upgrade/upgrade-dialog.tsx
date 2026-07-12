@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { usePlans } from "@/hooks/use-plans";
 import { usePricing } from "@/hooks/use-pricing";
+import { trackConversion } from "@/lib/analytics";
 import { startCheckout } from "@/lib/billing/checkout";
 import { benefitText, getProBenefits } from "@/lib/plans/benefits";
 
@@ -44,7 +45,8 @@ export function UpgradeDialog({
     setBusy(true);
     setError(null);
     try {
-      await startCheckout();
+      trackConversion("upgrade_prompt_clicked", { upgrade_reason: reason ?? undefined, location: "dialog" });
+      await startCheckout({ reason: reason ?? undefined, returnTo: window.location.pathname });
     } catch (err) {
       setBusy(false);
       setError(err instanceof Error ? err.message : "Não foi possível iniciar a assinatura.");
@@ -100,7 +102,9 @@ export function UpgradeDialog({
               <span className="text-3xl font-extrabold text-[var(--g-ink)]">{amount}</span>
               {period && <span className="text-sm font-medium text-[var(--g-sub)]">/{period}</span>}
             </div>
-            <p className="mt-1 text-xs text-[var(--g-muted)]">Pague uma vez · 30 dias de acesso · Pix ou cartão</p>
+            <p className="mt-1 text-xs text-[var(--g-muted)]">
+              Pagamento único · 30 dias de acesso · sem renovação automática
+            </p>
 
             {/* Contextual hook - why the dialog opened */}
             {reason && (
@@ -145,7 +149,7 @@ export function UpgradeDialog({
             </button>
 
             <p className="mt-3 text-center text-xs text-[var(--g-muted)]">
-              Pague com Pix ou cartão via Mercado Pago · acesso por 30 dias.
+              Pix ou cartão via Mercado Pago · acesso liberado após confirmação.
             </p>
           </motion.div>
         </motion.div>

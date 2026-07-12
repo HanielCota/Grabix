@@ -7,6 +7,8 @@ import { LandingSections } from "@/components/landing/landing-sections";
 import { CustomerShell } from "@/components/workspace/customer-shell";
 import { WorkspaceHome } from "@/components/workspace/workspace-home";
 import { landingContent } from "@/data/landing";
+import { formatBrazilianCurrency, getPlanPresentations } from "@/lib/plans/presentation";
+import { getEffectivePlans } from "@/server/plans-config";
 
 export const metadata: Metadata = {
   title: "Grabix — encontre mídias públicas em uma URL",
@@ -46,7 +48,10 @@ export default async function Home() {
   return <LandingHome />;
 }
 
-function LandingHome() {
+async function LandingHome() {
+  const { plans, pricing } = await getEffectivePlans();
+  const planPresentations = getPlanPresentations(plans);
+
   return (
     <main id="conteudo">
       <script type="application/ld+json" suppressHydrationWarning>
@@ -108,7 +113,11 @@ function LandingHome() {
         <HomeExperience />
       </section>
 
-      <LandingSections />
+      <LandingSections
+        freeBenefits={planPresentations.free.highlights}
+        proBenefits={planPresentations.pro.highlights}
+        proPrice={formatBrazilianCurrency(pricing.amountCents)}
+      />
       <footer className="border-t border-[var(--g-line)]">
         <div className="section-shell flex flex-col gap-5 py-10 text-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2 font-semibold text-[var(--g-ink)]">

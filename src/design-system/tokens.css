@@ -1,0 +1,46 @@
+/**
+ * Grabix Design System — design tokens
+ * Import this file once in the global stylesheet of a consuming project.
+ */
+:root {
+  --g-bg: #09090b;
+  --g-surface-1: #0f0f11;
+  --g-surface-2: #141416;
+  --g-surface-3: #1c1c1f;
+  --g-line: #27272a;
+  --g-line-hover: #3f3f46;
+
+  --g-ink: #fafafa;
+  --g-sub: #a1a1aa;
+  --g-muted: #94949e;
+  --g-accent: #e4e4e7;
+  --g-accent-hover: #ffffff;
+  --g-accent-text: #09090b;
+  --g-accent-soft: rgb(255 255 255 / 4%);
+  --g-accent-border: rgb(255 255 255 / 12%);
+
+  --g-brand: #3dd5b0;
+  --g-brand-light: #7cedd0;
+  --g-gold: #f5c451;
+  --g-danger: #f87171;
+  --g-danger-bg: rgb(248 113 113 / 6%);
+  --g-danger-border: rgb(248 113 113 / 15%);
+  --g-success: #4ade80;
+  --g-success-bg: rgb(74 222 128 / 6%);
+  --g-success-border: rgb(74 222 128 / 15%);
+
+  --g-radius-sm: 0.5rem;
+  --g-radius-md: 0.75rem;
+  --g-radius-lg: 1rem;
+  --g-shadow-button: 0 1px 2px rgb(0 0 0 / 40%), inset 0 1px 0 rgb(255 255 255 / 12%);
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

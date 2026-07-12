@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleHelp, Download, FileSearch, History, Menu, Settings, X } from "lucide-react";
+import { CircleHelp, Crown, Download, FileSearch, History, Menu, Settings, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -11,6 +11,7 @@ const navigation = [
   { href: "/", label: "Extrair mídias", icon: FileSearch },
   { href: "/analyses", label: "Minhas análises", icon: History },
   { href: "/conta", label: "Minha conta", icon: Settings },
+  { href: "/upgrade", label: "Plano e upgrade", icon: Crown },
 ] as const;
 
 function navClass(active: boolean) {
