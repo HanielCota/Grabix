@@ -154,7 +154,7 @@ export function LandingSections({
             </ConversionLink>
           </article>
           <article className="relative rounded-3xl border border-[var(--g-accent-border)] bg-[var(--g-surface-1)] p-7 shadow-[0_12px_40px_rgba(0,0,0,0.12)]">
-            <span className="absolute right-6 top-6 inline-flex items-center gap-1 rounded-full border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[var(--g-ink)]">
+            <span className="absolute right-6 top-6 inline-flex items-center gap-1 rounded-full border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)] px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-[var(--g-ink)]">
               <Sparkles className="h-3 w-3 text-[var(--g-gold)]" /> Mais escolhido
             </span>
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--g-accent-border)] bg-[var(--g-accent-soft)]">
@@ -219,7 +219,7 @@ export function LandingSections({
           >
             Experimentar o Grabix <ArrowRight className="h-4 w-4" />
           </ConversionLink>
-          <p className="mt-5 text-[11px] font-medium text-[#065649]">Formatos comuns: {supportedFormats.join(" · ")}</p>
+          <p className="mt-5 text-xs font-medium text-[#065649]">Formatos comuns: {supportedFormats.join(" · ")}</p>
         </div>
       </section>
     </div>
