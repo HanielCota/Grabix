@@ -36,8 +36,7 @@ function makeChain(): unknown {
 }
 
 if (MODULE_MOCK_AVAILABLE) {
-  // @types/node (22) ainda não tipa a opção `exports` do Node 26 (antiga `namedExports`)
-  mock.module("@/server/db", { exports: { getDb: () => makeChain() } } as Parameters<typeof mock.module>[1]);
+  mock.module("@/server/db", { namedExports: { getDb: () => makeChain() } });
 }
 
 const plansConfig = await import("../../src/server/plans-config.ts");

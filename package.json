@@ -41,20 +41,20 @@
     "zod": "^4.5.4"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.12.1",
-    "@biomejs/biome": "2.5.2",
-    "@playwright/test": "^1.61.1",
+    "@axe-core/playwright": "^4.13.0",
+    "@biomejs/biome": "2.5.14",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/archiver": "^8.0.0",
-    "@types/node": "^26.5.0",
+    "@types/node": "^26.6.2",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
-    "@types/react-test-renderer": "^19.1.0",
-    "drizzle-kit": "^0.31.10",
+    "@types/react-test-renderer": "^19.3.0",
+    "drizzle-kit": "^0.31.11",
     "postcss": "^8.5.10",
-    "react-test-renderer": "^19.2.8",
-    "tsx": "^4.23.13",
-    "typescript": "^6.0.3"
+    "react-test-renderer": "^19.3.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
   },
   "overrides": {
     "esbuild": "^0.25.0",
