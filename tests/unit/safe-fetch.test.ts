@@ -277,7 +277,12 @@ test("timeoutMs dispara o signal dentro do prazo", { skip: !canMockModules && SK
   resetSpies(
     (_url, init) =>
       new Promise<Response>((_resolve, reject) => {
-        init.signal?.addEventListener("abort", () => reject(new Error("AbortError: The operation was aborted")));
+        // AbortSignal.timeout não segura o event loop; este timer faz o papel do socket aberto do fetch real.
+        const keepAlive = setTimeout(() => reject(new Error("timeoutMs não abortou o fetch")), 5000);
+        init.signal?.addEventListener("abort", () => {
+          clearTimeout(keepAlive);
+          reject(new Error("AbortError: The operation was aborted"));
+        });
       }),
   );
   const inicio = Date.now();
