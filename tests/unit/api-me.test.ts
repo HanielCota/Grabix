@@ -58,8 +58,7 @@ if (canMockModules) {
       getTodayUsage: (_userId: string) => Promise.resolve(usageImpl),
     },
   });
-  // @types/node ainda não tipa a opção `exports` (antiga `namedExports`)
-  mock.module("@/server/db", { exports: { getDb: () => makeChain() } } as Parameters<typeof mock.module>[1]);
+  mock.module("@/server/db", { namedExports: { getDb: () => makeChain() } });
 }
 
 async function importRoute() {

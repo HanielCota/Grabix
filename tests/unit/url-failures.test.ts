@@ -57,10 +57,8 @@ const drizzleMock = {
 };
 
 if (MODULE_MOCK_AVAILABLE) {
-  // @types/node (22) ainda não tipa a opção `exports` do Node 26 (antiga `namedExports`)
-  const opts = { exports: drizzleMock } as Parameters<typeof mock.module>[1];
-  mock.module("drizzle-orm", opts);
-  mock.module("@/server/db", { exports: { getDb: () => makeChain() } } as typeof opts);
+  mock.module("drizzle-orm", { namedExports: drizzleMock });
+  mock.module("@/server/db", { namedExports: { getDb: () => makeChain() } });
 }
 
 // Import DEPOIS de registrar os mocks (o módulo é carregado uma única vez).

@@ -107,8 +107,7 @@ if (canMockModules) {
   mock.module("@/server/plans-config", {
     namedExports: { getEffectivePricing: () => Promise.resolve(pricingImpl) },
   });
-  // @types/node ainda não tipa a opção `exports` (antiga `namedExports`)
-  mock.module("@/server/db", { exports: { getDb: () => makeChain() } } as Parameters<typeof mock.module>[1]);
+  mock.module("@/server/db", { namedExports: { getDb: () => makeChain() } });
 }
 
 async function importRoute() {
